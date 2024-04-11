@@ -1,23 +1,10 @@
-import socket
 import threading  
+from classe import Dispositivo, Conexao
 
-# Conectando com o servidor
-porta_tcp = 5050
-ip_local = socket.gethostbyname( socket.gethostname())
-
-dispositivo_tcp = socket.socket( socket.AF_INET, socket.SOCK_STREAM)
-
-# Dados do dispositivo
-status = 'desligado'
-temperatura = 0
-conexao = False
-
-lock = threading.Lock()
+dispositivo = Dispositivo()
+conexao = Conexao()
 
 def menu( ip_local):
-    global status
-    global temperatura
-    global conexao
 
     while True:
         
@@ -25,14 +12,16 @@ def menu( ip_local):
 
         # Respostas para os casos em desenvolvimento
         if opcao == 1:
-            ip_servidor = input("\nIP servidor: ")
-            if conexao == False:
+
+            conexao.ip_servidor = input("\nIP servidor: ")
+            if conexao.servidor_conectado == False:
 
                 try:
-                    dispositivo_tcp.connect( (ip_servidor, porta_tcp))
-                    with lock:
-                        conexao = True
+                    conexao.dispositivo_tcp.connect( (conexao.ip_servidor, conexao.porta_tcp))
+                    with conexao.lock:
+                        conexao.servidor_conectado = True
                     print("\nConexão estabelecida")
+                    
                 except ConnectionRefusedError as e:
                     print("\nConexão impossibilitada")
 
@@ -40,56 +29,93 @@ def menu( ip_local):
                 print("\nConexão já estabelecida")
 
         elif opcao == 2:
-            if conexao == True:
-                with lock:
-                    conexao = False
+
+            if conexao.servidor_conectado == True:
+                with conexao.lock:
+                    conexao.servidor_conectado = False
                     print("\nConexão encerrada")
             else:
                 print("\nNão há um servidor conectado")
 
         elif opcao == 3:
-            with lock:
-                status = 'ligado'
+
+            if dispositivo.status == 'desligado':
+                with conexao.lock:
+                    dispositivo.status = 'ligado'
+                conexao.dispositivo_tcp.send("Dispositivo ligado".encode('utf-8'))
+
+            else:
+                conexao.dispositivo_tcp.send("Dispositivo já está ligado".encode('utf-8'))
         
         elif opcao == 4:       
-            print("\nIP local:", ip_local)
-            print("Status:", status)
-            print("Temperatura:", temperatura)
+
+            print("\nIP local:", dispositivo.ip_local)
+            print("Status:", dispositivo.status)
+            print("Temperatura:", dispositivo.temperatura)
             
         elif opcao == 5:
+
             nova_temperatura = int(input("Temperatura: "))
-            with lock:
-                temperatura = nova_temperatura
+            with conexao.lock:
+                dispositivo.temperatura = nova_temperatura
          
         elif opcao == 6:
-            with lock:
-                status = 'desligado' 
 
+            if dispositivo.status == 'ligado':
+                with conexao.lock:
+                    dispositivo.status = 'desligado'
+                conexao.dispositivo_tcp.send("Dispositivo desligado".encode('utf-8'))
+
+            else:
+                conexao.dispositivo_tcp.send("Dispositivo já está desligado".encode('utf-8'))
+
+# Receber requisições do servidor
 def requisicao_servidor( ip_local):
-    global status
-    global temperatura
-    global conexao
 
     while True:
 
-        if conexao == True:
-            comando = int(dispositivo_tcp.recv(2048).decode('utf-8'))
+        # Comando 1: ligar sensor
+        # Comando 2: desligar sensor
+
+        if conexao.servidor_conectado == True:
+            comando = int(conexao.dispositivo_tcp.recv(2048).decode('utf-8'))
 
             # Opções de respostas de comandos em desenvolvimento
             if comando == 1:
-                with lock:
-                    status = 'ligado'
-                dispositivo_tcp.send("dispositivo ligado".encode('utf-8'))
+
+                if dispositivo.status == 'desligado':
+                    with conexao.lock:
+                        dispositivo.status = 'ligado'
+                    conexao.dispositivo_tcp.send("Dispositivo ligado".encode('utf-8'))
+
+                else:
+                    conexao.dispositivo_tcp.send("Dispositivo já está ligado".encode('utf-8'))
 
             elif comando == 2:
-                info = "\nIP: " + ip_local + "\nStatus: " + status + "\nTemperatura: " + str(temperatura) 
-                dispositivo_tcp.send(info.encode('utf-8'))
 
-            elif comando == 3:
-                with lock:
-                    status = 'desligado'
+                if dispositivo.status == 'ligado':
+                    with conexao.lock:
+                        dispositivo.status = 'desligado'
+                    conexao.dispositivo_tcp.send("Dispositivo desligado".encode('utf-8'))
 
-# A lógica de receber comandos e poder executar opções do menu parecem funcionar
-threading.Thread(target=requisicao_servidor, args=(ip_local,)).start()
-menu(ip_local)
+                else:
+                    conexao.dispositivo_tcp.send("Dispositivo já está desligado".encode('utf-8'))
 
+# Enviar os dados via UDP
+def enviar_dados():    
+
+    while True:
+
+        if conexao.ip_servidor != "":
+                
+            dados = { "Descrição": "Sensor de temperatura", "Status": dispositivo.status, "Temperatura": dispositivo.temperatura}
+
+            conexao.dispositivo_udp.sendto( str(dados).encode('utf-8'), (conexao.ip_servidor, conexao.porta_udp))
+def iniciar():
+
+    # A lógica de receber comandos e poder executar opções do menu parecem funcionar
+    threading.Thread(target=requisicao_servidor, args=(dispositivo.ip_local,)).start()
+    #threading.Thread(target=enviar_dados).start()
+    menu(dispositivo.ip_local)
+
+iniciar()
