@@ -1,65 +1,71 @@
 import threading
-from classe import Armazenamento, Conexao_servidor
+from classe import Storage, Connection_server
 
 # lógica embaralhada
 # recebe as conexões; armazena os sockets e printa; o comando de resposta é um rascunho
 
 # É para colocar como global?
 
-armazenamento = Armazenamento()
-conexao_servidor = Conexao_servidor()
-print(conexao_servidor.ip_servidor)
+storage = Storage()
+connection_server = Connection_server()
+print(connection_server.server_ip)
 
 # Função temporária para enviar comandos ao dispositivo !!!! MUDEI PARA DICIONARIO
-def enviar_comando(endereco):
+def send_command(address):
 
     while True:
 
-        comando = input("\nComando: ")
-        armazenamento.conexoes[endereco].send(comando.encode('utf-8'))
-        print(armazenamento.conexoes[endereco].recv(2048).decode('utf-8'))
+        command = input("\nComando: ")
+        storage.connections[address].send(command.encode('utf-8'))
+        print(storage.connections[address].recv(2048).decode('utf-8'))
 
 # Aceitar dispositivos que iniciam conexões (parece que funciona) (é preciso retirar o print depois e a função coletar)
-def receber_conexao():
+def receive_connection_tcp():
     
     while True:
 
-        remetente, endereco_remetente = conexao_servidor.servidor_tcp.accept()
-        armazenamento.conexoes[endereco_remetente[0]] = remetente
-        print("Nova conexao:", endereco_remetente)
-        coletar_dado(endereco_remetente[0])
+        connection_sender, address_sender = connection_server.tcp_server.accept()
+        with connection_server.lock:
+            storage.connections[address_sender[0]] = connection_sender
+        print("Nova conexao:", address_sender)
+        print(get_data_udp(address_sender[0]))
 
 # Receber os dados enviados por udp (parece que funciona) (retirar os prints depois)
-def receber_dados():
+def receive_data_udp():
 
     while True:
 
-        dados, endereco = conexao_servidor.servidor_udp.recvfrom(2048)
+        data, address = connection_server.udp_server.recvfrom(2048)
 
-        if dados.decode('utf-8') == 'Conexao encerrada':
+        if data.decode('utf-8') == 'Conexao encerrada':
 
-            armazenamento.dados_dispositivos.pop(endereco[0])
-            armazenamento.conexoes.pop(endereco[0])
-            print("Lista dados = ", armazenamento.dados_dispositivos)
-            print("Lista ips = ", armazenamento.conexoes)
+            if (address[0]) in storage.data_udp_devices:
+                
+                with connection_server.lock:
+                    storage.data_udp_devices.pop(address[0])
+                    storage.connections.pop(address[0])
+            #print("Lista dados = ", storage.data_udp_devices)
+            #print("Lista ips = ", storage.connections)
 
         else:
 
-            print(dados.decode('utf-8'))
-            print(endereco[0])
-            armazenamento.dados_dispositivos[endereco[0]] = dados.decode('utf-8')
-            print("Lista dados = ", armazenamento.dados_dispositivos)
-            print("Lista ips = ", armazenamento.conexoes)
+            #print(data.decode('utf-8'))
+            #print(address[0])
+            with connection_server.lock:
+                storage.data_udp_devices[address[0]] = data.decode('utf-8')
+            #print("Lista dados = ", storage.data_udp_devices)
+            #print("Lista ips = ", storage.connections)
 
+# Comando de retorno do dado UDP
 # Coletar o dado retornado via UDP (parece que funciona mas tem que funcionar com a api)
-def coletar_dado( ip_dispositivo: str) -> str:
+def get_data_udp( device_ip: str) -> str:
 
-    armazenamento.conexoes[ip_dispositivo].send("1".encode('utf-8')) 
-    status = eval(armazenamento.conexoes[ip_dispositivo].recv(2048).decode('utf-8'))
+    storage.connections[device_ip].send("1".encode('utf-8')) 
+    status = storage.connections[device_ip].recv(2048).decode('utf-8')
 
     if ( status == 'ligado'):
-
-        return armazenamento[ip_dispositivo]
+      
+        return str(storage.data_udp_devices[device_ip])
     
     elif ( status == 'desligado'):
 
@@ -67,7 +73,7 @@ def coletar_dado( ip_dispositivo: str) -> str:
 
 def iniciar():
 
-    threading.Thread(target=receber_dados).start()
-    receber_conexao()
+    threading.Thread(target=receive_data_udp).start()
+    receive_connection_tcp()
 
 iniciar()
