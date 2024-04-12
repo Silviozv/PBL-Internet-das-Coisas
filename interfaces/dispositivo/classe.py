@@ -1,39 +1,39 @@
 import socket
 import threading
 
-class Dispositivo:
+class Sensor:
 
     def __init__(self):
 
-        self.ip_local = socket.gethostbyname( socket.gethostname())
-        self.descricao = 'Sensor de temperatura'
+        self.local_ip = socket.gethostbyname( socket.gethostname())
+        self.description = 'Sensor de temperatura'
         self.status = 'desligado'
-        self.temperatura = 0
+        self.temperature = 0
 
     # Dados a serem enviados via UDP
-    def get_informacoes(self) -> dict:
+    def get_returning_data(self) -> dict:
 
-        informacoes = {"Temperatura": self.temperatura}
+        informacoes = {"Temperatura": self.temperature}
         return informacoes
     
-    def get_status(self):
+    def get_status(self) -> str:
 
         return self.status
 
-class Conexao:
+class Connection_device:
 
     def __init__(self):
 
-        self.porta_tcp = 5050
-        self.porta_udp = 5060
+        self.tcp_port = 5050
+        self.udp_port = 5060
 
-        self.dispositivo_tcp = socket.socket( socket.AF_INET, socket.SOCK_STREAM)
-        self.dispositivo_udp = socket.socket( socket.AF_INET, socket.SOCK_DGRAM)
+        self.tcp_device = socket.socket( socket.AF_INET, socket.SOCK_STREAM)
+        self.udp_device = socket.socket( socket.AF_INET, socket.SOCK_DGRAM)
 
-        self.ip_servidor = ""
-        self.servidor_conectado = False
+        self.server_ip = ""
+        self.server_connected = False
         self.lock = threading.Lock()
 
-    def reiniciar_conexao_tcp(self):
+    def restart_tcp_connection(self):
 
-        self.dispositivo_tcp = socket.socket( socket.AF_INET, socket.SOCK_STREAM)
+        self.tcp_device = socket.socket( socket.AF_INET, socket.SOCK_STREAM)
