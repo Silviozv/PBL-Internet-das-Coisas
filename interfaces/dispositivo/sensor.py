@@ -15,73 +15,27 @@ def menu():
         # Respostas para os casos em desenvolvimento
         if (option == '1'):
 
-            ip_servidor = input("\nIP servidor: ")
-
-            if (connection.server_connected == False):
-
-                try:
-                    connection.tcp_device.connect( (ip_servidor, connection.tcp_port))
-                    with connection.lock:
-                        connection.server_ip = ip_servidor
-                        connection.server_connected = True
-                    print("\nConexão estabelecida")
-                    
-                except (ConnectionRefusedError, socket.gaierror) as e:
-                    print("\nConexão impossibilitada")
-
-            else:
-                print("\nConexão já estabelecida")
+            print(f"\n{connection.start_connection()}")
 
         elif (option == '2'):
 
-            if (connection.server_connected == True):
-
-                with connection.lock:
-                    connection.server_connected = False
-                    connection.tcp_device.close()
-                    connection.restart_tcp_connection()
-
-                print("\nConexão encerrada")
-
-            else:
-                print("\nNão há um servidor conectado")
+            print(f"\n{connection.end_connection()}")
 
         elif (option == '3'):
 
-            if sensor.status == 'desligado':
-
-                with connection.lock:
-                    sensor.status = 'ligado'
-
-                print("\nDispositivo ligado")
-
-            else:
-                print("\nDispositivo já está ligado")
+            print(f"\n{sensor.turn_on()}")
         
         elif (option == '4'):       
 
-            print(f"\nIP local: {sensor.local_ip}")
-            print(f"Descrição: {sensor.description}")
-            print(f"Status: {sensor.status}")
-            print(f"Temperatura: {sensor.temperature}")
+            print(f"\n{sensor.get_atributes()}")
             
         elif (option == '5'):
 
-            new_temperature = int(input("\nTemperatura: "))
-            with connection.lock:
-                sensor.temperature = new_temperature
-
-            print("\nTemperatura atualizada")
+            print(f"\n{sensor.set_temperature()}")
          
         elif (option == '6'):
-
-            if (sensor.status == 'ligado'):
-                with connection.lock:
-                    sensor.status = 'desligado'
-                print("\nDispositivo desligado")
-
-            else:
-                print("\nDispositivo já está desligado")
+ 
+            print(f"\n{sensor.turn_off()}")
 
 # Receber requisições do servidor (O primeiro comando funciona)
 def server_request_tcp():
@@ -90,6 +44,7 @@ def server_request_tcp():
 
         # Comando 1: get status
         # Comando 2: get descrição geral
+        # Comando 3: get comandos disponíveis
 
         if (connection.server_connected == True):
 
@@ -100,19 +55,24 @@ def server_request_tcp():
                 # Opções de respostas de comandos em desenvolvimento
                 if (command == 1):
 
+                    available_commands = sensor.get_available_commands()
+                    connection.tcp_device.send(str(available_commands).encode('utf-8'))
+
+                elif (command == 2):
+
+                    general_description = sensor.get_general_description()
+                    connection.tcp_device.send(str(general_description).encode('utf-8'))
+
+                elif (command == 3):
+                    pass
+
+                elif (command == 4):
+                    pass
+
+                elif (command == 5):
+
                     status = sensor.get_status()
                     connection.tcp_device.send(status.encode('utf-8'))
-
-
-                elif command == 2:
-
-                    if sensor.status == 'ligado':
-                        with connection.lock:
-                            sensor.status = 'desligado'
-                        connection.tcp_device.send("Dispositivo desligado".encode('utf-8'))
-
-                    else:
-                        connection.tcp_device.send("Dispositivo já está desligado".encode('utf-8'))
 
             except (ConnectionAbortedError) as e:
                 pass
