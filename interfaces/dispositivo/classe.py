@@ -13,7 +13,8 @@ class Sensor:
 
     def get_atributes(self) -> str:
 
-        response = f"IP local: {self.local_ip}\nDescrição: {self.description}\nStatus: {self.status}\nTemperatura: {self.temperature}"
+        status = self.status.capitalize()
+        response = f"IP local: {self.local_ip}\nDescrição: {self.description}\nStatus: {status}\nTemperatura: {self.temperature}"
         return response
 
     # Dados a serem enviados via UDP
@@ -28,7 +29,8 @@ class Sensor:
     
     def get_general_description(self) -> dict:
 
-        general_description = {"Descrição": self.description, "Status": self.status} 
+        status = self.status.capitalize()
+        general_description = {"Descrição": self.description, "Status": status} 
         return general_description
     
     def get_available_commands(self) -> list:
@@ -100,7 +102,7 @@ class Connection_device:
 
                 return "Conexão estabelecida"
                     
-            except (ConnectionRefusedError, socket.gaierror) as e:
+            except (ConnectionRefusedError, socket.gaierror, OSError) as e:
                 return "Conexão impossibilitada"
 
         else:
