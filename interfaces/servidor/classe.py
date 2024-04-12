@@ -1,24 +1,27 @@
 import socket
+import threading
 
-class Armazenamento:
-
-    def __init__(self):
-
-        self.conexoes = {}
-        self.dados_dispositivos = {}
-
-class Conexao_servidor:
+class Storage:
 
     def __init__(self):
 
-        self.ip_servidor = socket.gethostbyname( socket.gethostname())
+        self.connections = {}
+        self.data_udp_devices = {}
 
-        self.porta_tcp = 5050
-        self.porta_udp = 5060
+class Connection_server:
 
-        self.servidor_tcp = socket.socket( socket.AF_INET, socket.SOCK_STREAM)
-        self.servidor_tcp.bind( (self.ip_servidor, self.porta_tcp))
-        self.servidor_tcp.listen()
+    def __init__(self):
 
-        self.servidor_udp = socket.socket( socket.AF_INET, socket.SOCK_DGRAM)
-        self.servidor_udp.bind( (self.ip_servidor, self.porta_udp))
+        self.server_ip = socket.gethostbyname( socket.gethostname())
+
+        self.tcp_port = 5050
+        self.udp_port = 5060
+
+        self.tcp_server = socket.socket( socket.AF_INET, socket.SOCK_STREAM)
+        self.tcp_server.bind( (self.server_ip, self.tcp_port))
+        self.tcp_server.listen()
+
+        self.udp_server = socket.socket( socket.AF_INET, socket.SOCK_DGRAM)
+        self.udp_server.bind( (self.server_ip, self.udp_port))
+
+        self.lock = threading.Lock()
