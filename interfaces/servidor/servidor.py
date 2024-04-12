@@ -10,15 +10,6 @@ storage = Storage()
 connection_server = Connection_server()
 print(connection_server.server_ip)
 
-# Função temporária para enviar comandos ao dispositivo !!!! MUDEI PARA DICIONARIO
-def send_command(address):
-
-    while True:
-
-        command = input("\nComando: ")
-        storage.connections[address].send(command.encode('utf-8'))
-        print(storage.connections[address].recv(2048).decode('utf-8'))
-
 # Aceitar dispositivos que iniciam conexões (parece que funciona) (é preciso retirar o print depois e a função coletar)
 def receive_connection_tcp():
     
@@ -28,7 +19,7 @@ def receive_connection_tcp():
         with connection_server.lock:
             storage.connections[address_sender[0]] = connection_sender
         print("Nova conexao:", address_sender)
-        print(get_data_udp(address_sender[0]))
+        print(get_available_commands(address_sender[0]))
 
 # Receber os dados enviados por udp (parece que funciona) (retirar os prints depois)
 def receive_data_udp():
@@ -56,11 +47,25 @@ def receive_data_udp():
             #print("Lista dados = ", storage.data_udp_devices)
             #print("Lista ips = ", storage.connections)
 
+# Comando de retorno dos comandos disponíveis
+def get_available_commands(device_ip: str) -> str:
+
+    storage.connections[device_ip].send("2".encode('utf-8')) 
+    available_commands = storage.connections[device_ip].recv(2048).decode('utf-8')
+    return available_commands
+
+# Comando de retorno da descrição geral do dipositivo
+def get_general_description(device_ip: str) -> str:
+
+    storage.connections[device_ip].send("1".encode('utf-8')) 
+    general_description = storage.connections[device_ip].recv(2048).decode('utf-8')
+    return general_description
+
 # Comando de retorno do dado UDP
 # Coletar o dado retornado via UDP (parece que funciona mas tem que funcionar com a api)
 def get_data_udp( device_ip: str) -> str:
 
-    storage.connections[device_ip].send("1".encode('utf-8')) 
+    storage.connections[device_ip].send("5".encode('utf-8')) 
     status = storage.connections[device_ip].recv(2048).decode('utf-8')
 
     if ( status == 'ligado'):
