@@ -64,10 +64,14 @@ def server_request_tcp():
                     connection.tcp_device.send(str(general_description).encode('utf-8'))
 
                 elif (command == 3):
-                    pass
+                    
+                    response = sensor.turn_on()
+                    connection.tcp_device.send(str(response).encode('utf-8'))
 
                 elif (command == 4):
-                    pass
+                    
+                    response = sensor.turn_off()
+                    connection.tcp_device.send(str(response).encode('utf-8'))
 
                 elif (command == 5):
 
@@ -103,4 +107,5 @@ def iniciar():
     threading.Thread(target=send_data_udp).start()
     menu()
 
-iniciar()
+if __name__=="__main__":
+    iniciar()
