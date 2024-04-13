@@ -26,7 +26,8 @@ def menu():
             print(f"\n{radio.get_atributes()}")
             
         elif (option == '5'):
-            print(f"\n{radio.set_music()}")
+            new_music = input("Música: ")
+            print(f"\n{radio.set_music(new_music)}")
          
         elif (option == '6'):
 
@@ -77,6 +78,11 @@ def server_request_tcp():
 
                     response = radio.set_music(music)
                     connection.tcp_device.send(response.encode('utf-8'))
+
+                elif (command == 6):
+
+                    type = radio.get_type()
+                    connection.tcp_device.send(str(type).encode('utf-8'))
 
             except (ConnectionAbortedError) as e:
                 pass
