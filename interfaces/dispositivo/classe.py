@@ -75,6 +75,66 @@ class Sensor:
             return "Dispositivo já está desligado" 
 
 
+class Radio:
+
+    def __init__(self):
+
+        self.local_ip = socket.gethostbyname( socket.gethostname())
+        self.description = 'Aparelho de som via internet'
+        self.type = 'Atuante'
+        self.status = 'desligado'
+        self.music = 'Nenhuma'
+
+    def get_atributes(self) -> str:
+
+        status = self.status.capitalize()
+        response = f"IP local: {self.local_ip}\nDescrição: {self.description}\nStatus: {status}\nMúsica: {self.music}"
+        return response
+    
+    def get_status(self) -> str:
+
+        return self.status
+    
+    def get_general_description(self) -> dict:
+
+        status = self.status.capitalize()
+        general_description = {"Descrição": self.description, "Status": status, "Música": self.music} 
+        return general_description
+    
+    def get_available_commands(self) -> list:
+
+        available_commands = ["Consultar descrição geral", "Ligar", "Desligar", "Selecionar música"]
+        return available_commands
+    
+    def set_music(self, new_music: str) -> str:
+
+        with threading.Lock():
+            self.music = new_music
+            
+        return "Música selecionada"
+            
+    def turn_on(self) -> str:
+
+        if self.status == 'desligado':
+            with threading.Lock():
+                self.status = 'ligado'
+
+            return "Dispositivo ligado"
+
+        else:
+            return "Dispositivo já está ligado"
+        
+    def turn_off(self) -> str:
+
+        if (self.status == 'ligado'):
+            with threading.Lock():
+                self.status = 'desligado'
+
+            return "Dispositivo desligado"
+
+        else:
+            return "Dispositivo já está desligado" 
+
 class Connection_device:
 
     def __init__(self):
