@@ -72,6 +72,11 @@ def server_request_tcp():
                     status = sensor.get_status()
                     connection.tcp_device.send(status.encode('utf-8'))
 
+                elif (command == 6):
+
+                    status = sensor.get_type()
+                    connection.tcp_device.send(status.encode('utf-8'))
+
             except (ConnectionAbortedError) as e:
                 pass
 
