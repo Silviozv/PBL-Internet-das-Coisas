@@ -14,27 +14,21 @@ def menu():
 
         # Respostas para os casos em desenvolvimento
         if (option == '1'):
-
             print(f"\n{connection.start_connection()}")
 
         elif (option == '2'):
-
             print(f"\n{connection.end_connection()}")
 
         elif (option == '3'):
-
             print(f"\n{sensor.turn_on()}")
         
         elif (option == '4'):       
-
             print(f"\n{sensor.get_atributes()}")
             
         elif (option == '5'):
-
             print(f"\n{sensor.set_temperature()}")
          
         elif (option == '6'):
- 
             print(f"\n{sensor.turn_off()}")
 
 # Receber requisições do servidor (O primeiro comando funciona)
