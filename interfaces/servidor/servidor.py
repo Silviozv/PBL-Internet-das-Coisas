@@ -80,7 +80,7 @@ def get_general_description(device_ip: str) -> str:
 
     storage.connections[device_ip].send("2".encode('utf-8')) 
     general_description = storage.connections[device_ip].recv(2048).decode('utf-8')
-    return general_description
+    return eval(general_description)
 
 def turn_on_device( device_ip: str) -> str:
 
@@ -103,11 +103,23 @@ def get_data_udp( device_ip: str) -> str:
 
     if ( status == 'ligado'):
       
-        return str(storage.data_udp_devices[device_ip])
+        return eval(storage.data_udp_devices[device_ip])
     
     elif ( status == 'desligado'):
 
         return "Dispositivo desligado, não é possível coletar dados de leitura"
+
+def set_data( device_ip: str, data: str) -> str:
+
+    storage.connections[device_ip].send((f"5 {data}").encode('utf-8')) 
+    response = storage.connections[device_ip].recv(2048).decode('utf-8')
+    return response
+   
+def get_device_type( device_ip: str) -> str:
+
+    storage.connections[device_ip].send("6".encode('utf-8')) 
+    type = storage.connections[device_ip].recv(2048).decode('utf-8')
+    return {"Tipo": type}
 
 def get_devices_ip():
 
