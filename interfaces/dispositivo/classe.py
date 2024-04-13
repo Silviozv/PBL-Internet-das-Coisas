@@ -30,12 +30,12 @@ class Sensor:
     def get_general_description(self) -> dict:
 
         status = self.status.capitalize()
-        general_description = {"Descrição": self.description, "Status": status} 
+        general_description = {'Descrição': self.description, 'Status': status} 
         return general_description
     
     def get_available_commands(self) -> list:
 
-        available_commands = ["Consultar descrição geral", "Ligar", "Desligar", "Retornar medida de temperatura"]
+        available_commands = ['Consultar descrição geral', 'Ligar', 'Desligar', 'Retornar medida de temperatura']
         return available_commands
     
     def set_temperature(self) -> str:
@@ -98,19 +98,19 @@ class Radio:
     def get_general_description(self) -> dict:
 
         status = self.status.capitalize()
-        general_description = {"Descrição": self.description, "Status": status, "Música": self.music} 
+        general_description = {'Descrição': self.description, 'Status': status, 'Música': self.music} 
         return general_description
     
     def get_available_commands(self) -> list:
 
-        available_commands = ["Consultar descrição geral", "Ligar", "Desligar", "Selecionar música"]
+        available_commands = ['Consultar descrição geral', 'Ligar', 'Desligar', 'Selecionar música']
         return available_commands
     
     def set_music(self, new_music: str) -> str:
 
         with threading.Lock():
             self.music = new_music
-            
+
         return "Música selecionada"
             
     def turn_on(self) -> str:
