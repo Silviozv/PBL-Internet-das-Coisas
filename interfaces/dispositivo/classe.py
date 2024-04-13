@@ -9,7 +9,7 @@ class Sensor:
         self.description = 'Sensor de temperatura'
         self.type = 'Sensor'
         self.status = 'desligado'
-        self.temperature = 0
+        self.temperature = '0 °C'
 
     def get_atributes(self) -> str:
 
@@ -27,6 +27,10 @@ class Sensor:
 
         return self.status
     
+    def get_type(self) -> str:
+
+        return self.type
+    
     def get_general_description(self) -> dict:
 
         status = self.status.capitalize()
@@ -35,7 +39,7 @@ class Sensor:
     
     def get_available_commands(self) -> list:
 
-        available_commands = ['Consultar descrição geral', 'Ligar', 'Desligar', 'Retornar medida de temperatura']
+        available_commands = ['Ligar', 'Desligar', 'Retornar medida de temperatura']
         return available_commands
     
     def set_temperature(self) -> str:
@@ -44,7 +48,7 @@ class Sensor:
             new_temperature = int(input("\nTemperatura: "))
 
             if -50 < new_temperature < 300:
-                self.temperature = new_temperature
+                self.temperature = (f'{new_temperature} °C')
                 return "Medida de temperatura atualizada"
             else:
                 raise ValueError
@@ -95,6 +99,10 @@ class Radio:
 
         return self.status
     
+    def get_type(self) -> str:
+
+        return self.type
+    
     def get_general_description(self) -> dict:
 
         status = self.status.capitalize()
@@ -103,7 +111,7 @@ class Radio:
     
     def get_available_commands(self) -> list:
 
-        available_commands = ['Consultar descrição geral', 'Ligar', 'Desligar', 'Selecionar música']
+        available_commands = ['Ligar', 'Desligar', 'Selecionar música']
         return available_commands
     
     def set_music(self, new_music: str) -> str:
@@ -111,7 +119,7 @@ class Radio:
         with threading.Lock():
             self.music = new_music
 
-        return "Música selecionada"
+        return "Dado selecionado"
             
     def turn_on(self) -> str:
 
