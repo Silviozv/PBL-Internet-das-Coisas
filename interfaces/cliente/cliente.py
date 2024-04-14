@@ -1,5 +1,4 @@
 import requests
-import json
 
 def initial_menu():
     
@@ -22,7 +21,6 @@ def server_menu( server_ip: str):
     while (option != '3'):
 
         if (option == '1'):
-
             url = (f'http://{server_ip}:5070/devices')
             devices_ip = requests.get(url).json()
 
@@ -52,82 +50,61 @@ def device_menu(server_ip: str, device_ip: str):
     while (option != '4'):
 
         if (option == '1'):
-            url = (f'http://{server_ip}:5070/devices/{device_ip}/description')
-            general_description = requests.get(url).json()
+            url = (f'http://{server_ip}:5070/devices/{device_ip}/commands/0')
+            response = requests.get(url).json()
+            amount_commands = len(response['Resposta'])
+
+            url = (f'http://{server_ip}:5070/devices/{device_ip}/commands/{amount_commands + 1}')
+            response = requests.get(url).json()
+
+            general_description =  response['Resposta']
 
             print()
             for key in general_description.keys():
                 print(f"{key}: {general_description[key]}")
         
         elif (option == '2'):
-            url = (f'http://{server_ip}:5070/devices/{device_ip}/commands')
-            available_commands = requests.get(url).json()
+            url = (f'http://{server_ip}:5070/devices/{device_ip}/commands/0')
+            response = requests.get(url).json()
+            amount_commands = len(response['Resposta'])
+
+            url = (f'http://{server_ip}:5070/devices/{device_ip}/commands/{amount_commands + 2}')
+            response = requests.get(url).json()
+
+            available_commands = response['Resposta']
 
             print()
-            for i in range(len(available_commands)):
-                print(f"{i+1}: {available_commands[i]}")
+            for key in available_commands.keys():
+                print(f"{key}: {available_commands[key]}")
         
         elif (option == '3'):
-            command = input("\nComando: ")
+            url = (f'http://{server_ip}:5070/devices/{device_ip}/commands/0')
+            response = requests.get(url).json()
+            commands_description = response['Resposta']
 
-            if ( command == '1'):
+            command = input("\nComando: ").strip()
 
-                url = (f'http://{server_ip}:5070/devices/{device_ip}/status/ligar')
-
-                response_code = requests.patch(url).status_code
-
-                if ( response_code == 200):
-                    print("\nDispositivo ligado")
-
-                elif ( response_code == 422):
-                    print("\nDispositivo já está ligado")
-
-            elif ( command == '2'):
-
-                url = (f'http://{server_ip}:5070/devices/{device_ip}/status/desligar')
-
-                response_code = requests.patch(url).status_code
-
-                if ( response_code == 200):
-                    print("\nDispositivo desligado")
-
-                elif ( response_code == 422):
-                    print("\nDispositivo já está desligado")  
-
-            elif ( command == '3'):
-
-                url = (f'http://{server_ip}:5070/devices/{device_ip}/type')
-
+            if ( commands_description[command]['Método HTTP'] == 'GET'):
+                url = (f'http://{server_ip}:5070/devices/{device_ip}/commands/{command}')
                 response = requests.get(url).json()
 
-                if ( response["Tipo"] == 'Sensor'):
-                    
-                    url = (f'http://{server_ip}:5070/devices/{device_ip}/data')
+            elif (commands_description[command]['Método HTTP'] == 'POST'):
+                url = (f'http://{server_ip}:5070/devices/{device_ip}/commands/{command}')
+                response = requests.post(url).json()
 
-                    response = requests.get(url)
-                    response_content = response.json()
-                    response_code = response.status_code
+            elif ( commands_description[command]['Método HTTP'] == 'PATCH'):
+                url = (f'http://{server_ip}:5070/devices/{device_ip}/commands/{command}')
+                response = requests.patch(url).json()
 
-                    if ( response_code == 200):
+            if ( response['Tipo de resposta'] == "Mensagem de resposta"):
+                print(f"\n{response['Resposta']}")
 
-                        print()
-                        for key in response_content.keys():
-                            print(f"{key}: {response_content[key]}")
+            elif ( response['Tipo de resposta'] == "Dicionário"):
+                data = response['Resposta']
 
-                    if ( response_code == 404):
-
-                        print("\nDispositivo desligado, não é possível coletar dados de leitura")
-
-                elif ( response["Tipo"] == 'Atuante'):
-            
-                    new_data = input("\nNovo dado: ")
-
-                    url = (f'http://{server_ip}:5070/devices/{device_ip}/data/{new_data}')
-                    response_code = requests.patch(url).status_code
-
-                    if ( response_code == 200):
-
-                        print("\nNovo dado setado")
+                print()
+                for key in (data.keys()):
+                    print(f"{key}: {data[key]}")
 
         option = input("\n[1] Descrição geral\n[2] Requisições disponíveis\n[3] Enviar requisição\n[4] Voltar\n\n> ")
 
