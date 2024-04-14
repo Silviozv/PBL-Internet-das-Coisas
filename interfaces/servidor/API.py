@@ -10,73 +10,26 @@ def get_devices_ip():
 
     return jsonify(servidor.get_devices_ip())
 
-# Consultar comandos disponíveis de um dispositivo
-@app.route('/devices/<string:device_ip>/commands',methods=['GET'])
-def get_device_commands( device_ip):
+# Enviar comando do tipo de retorno de dados
+@app.route('/devices/<string:device_ip>/commands/<string:command>',methods=['GET'])
+def get_device_data( device_ip, command):
 
-    return jsonify(servidor.get_available_commands(device_ip))
+    request = {'Comando': command}
+    return jsonify(servidor.send_command(device_ip, request))
 
-# Consultar descrição geral do dispositivo
-@app.route('/devices/<string:device_ip>/description',methods=['GET'])
-def get_device_description( device_ip):
+# Enviar comando do tipo mudança de estado
+@app.route('/devices/<string:device_ip>/commands/<string:command>',methods=['POST'])
+def set_device_state( device_ip, command):
 
-    return jsonify(servidor.get_general_description(device_ip))
+    request = {'Comando': command}
+    return jsonify(servidor.send_command(device_ip, request))
 
-# Modificar status do dispositivo
-@app.route('/devices/<string:device_ip>/status/<string:command>',methods=['PATCH'])
-def set_device_status( device_ip, command):
+# Enviar comando do tipo mudar dado específico
+@app.route('/devices/<string:device_ip>/commands/<string:command>',methods=['PATCH'])
+def set_device_data( device_ip, command):
 
-    if ( command == 'ligar'):
-
-        response = servidor.turn_on_device(device_ip)
-
-        if ( response == 'Dispositivo ligado'):
-            return jsonify(servidor.get_general_description(device_ip)), 200
-        
-        elif ( response == 'Dispositivo já está ligado'): 
-            return jsonify(servidor.get_general_description(device_ip)), 422
-    
-    elif ( command == 'desligar'):
-
-        response = servidor.turn_off_device(device_ip)
-
-        if ( response == 'Dispositivo desligado'):
-            return jsonify(servidor.get_general_description(device_ip)), 200
-        
-        elif ( response == 'Dispositivo já está desligado'): 
-            return jsonify(servidor.get_general_description(device_ip)), 422
-
-# Consultar tipo do dispositivo
-@app.route('/devices/<string:device_ip>/type',methods=['GET'])
-def get_device_type( device_ip):
-
-    return jsonify(servidor.get_device_type( device_ip)), 200
-    
-# Consultar tipo do dispositivo
-@app.route('/devices/<string:device_ip>/data',methods=['GET'])
-def get_device_data( device_ip):
-
-    response = servidor.get_data_udp(device_ip)
-
-    if ( response == "Dispositivo desligado, não é possível coletar dados de leitura"):
-
-        return jsonify({"Resposta": "Dispositivo desligado, não é possível coletar dados de leitura"}), 404
-
-    else:
-
-        return jsonify(response), 200
-
-# Consultar tipo do dispositivo
-@app.route('/devices/<string:device_ip>/data/<string:data>',methods=['PATCH'])
-def set_device_data( device_ip, data):
-
-    response = servidor.set_data( device_ip, data)
-
-    if ( response == "Dado selecionado"):
-
-        return jsonify(servidor.get_general_description(device_ip)), 200
-
-
+    request = {'Comando': command}
+    return jsonify(servidor.send_command(device_ip, request))
 
 threading.Thread( target=servidor.receive_connection_tcp).start()
 threading.Thread( target=servidor.receive_data_udp).start()
