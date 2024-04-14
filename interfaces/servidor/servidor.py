@@ -10,26 +10,6 @@ storage = Storage()
 connection_server = Connection_server()
 print(connection_server.server_ip)
 
-# Funcção de teste de requisições
-def enviar_comando():
-
-    while True:
-        ip_device = input("\nIP dispositivo: ")
-        comando = int(input("Comando: "))
-
-        if comando == 1:
-            print(get_available_commands(ip_device))
-        elif comando == 2:
-            print(get_general_description(ip_device))
-        elif comando == 3:
-            print(turn_on_device(ip_device))
-        elif comando == 4:
-            print(turn_off_device(ip_device))
-        elif comando == 5:
-            musica = input("Música: ")
-
-            print(get_data_udp(ip_device))
-
 # Aceitar dispositivos que iniciam conexões (parece que funciona) (é preciso retirar o print depois e a função coletar)
 def receive_connection_tcp():
     
@@ -64,71 +44,28 @@ def receive_data_udp():
             #print(data.decode('utf-8'))
             #print(address[0])
             with connection_server.lock:
-                storage.data_udp_devices[address[0]] = data.decode('utf-8')
+                storage.data_udp_devices[address[0]] = eval(data.decode('utf-8'))
             #print("Lista dados = ", storage.data_udp_devices)
             #print("Lista ips = ", storage.connections)
 
-# Comando de retorno dos comandos disponíveis
-def get_available_commands(device_ip: str) -> str:
+# Envio de comandos para o dispositivo
+def send_command(device_ip: str, request: dict):
 
-    storage.connections[device_ip].send("1".encode('utf-8')) 
-    available_commands = storage.connections[device_ip].recv(2048).decode('utf-8')
-    return eval(available_commands)
+    storage.connections[device_ip].send(str(request).encode('utf-8'))
+    response = eval(storage.connections[device_ip].recv(2048).decode('utf-8'))
 
-# Comando de retorno da descrição geral do dipositivo
-def get_general_description(device_ip: str) -> str:
+    if (response['Tipo de resposta'] == 'Permissão de coleta de dados UDP'):
 
-    storage.connections[device_ip].send("2".encode('utf-8')) 
-    general_description = storage.connections[device_ip].recv(2048).decode('utf-8')
-    return eval(general_description)
+        if (response['Resposta'] == 'Coleta permitida'):
 
-def turn_on_device( device_ip: str) -> str:
+            response = {'Tipo de resposta': 'Dicionário', 'Resposta': storage.data_udp_devices[device_ip]}
+            
+        elif (response['Resposta'] == 'Coleta não permitida'):
 
-    storage.connections[device_ip].send("3".encode('utf-8')) 
-    response = storage.connections[device_ip].recv(2048).decode('utf-8')
+            response = {'Tipo de resposta': 'Mensagem de resposta', 'Resposta': response['Justificativa']}
+
     return response
-
-def turn_off_device( device_ip: str) -> str:
-
-    storage.connections[device_ip].send("4".encode('utf-8')) 
-    response = storage.connections[device_ip].recv(2048).decode('utf-8')
-    return response
-
-# Comando de retorno do dado UDP
-# Coletar o dado retornado via UDP (parece que funciona mas tem que funcionar com a api)
-def get_data_udp( device_ip: str) -> str:
-
-    storage.connections[device_ip].send("5".encode('utf-8')) 
-    status = storage.connections[device_ip].recv(2048).decode('utf-8')
-
-    if ( status == 'ligado'):
-      
-        return eval(storage.data_udp_devices[device_ip])
-    
-    elif ( status == 'desligado'):
-
-        return "Dispositivo desligado, não é possível coletar dados de leitura"
-
-def set_data( device_ip: str, data: str) -> str:
-
-    storage.connections[device_ip].send((f"5 {data}").encode('utf-8')) 
-    response = storage.connections[device_ip].recv(2048).decode('utf-8')
-    return response
-   
-def get_device_type( device_ip: str) -> str:
-
-    storage.connections[device_ip].send("6".encode('utf-8')) 
-    type = storage.connections[device_ip].recv(2048).decode('utf-8')
-    return {"Tipo": type}
 
 def get_devices_ip():
 
     return list(storage.connections.keys())
-
-def iniciar():
-
-    threading.Thread(target=receive_connection_tcp).start()
-    threading.Thread(target=receive_data_udp).start()
-    enviar_comando()
-
-#iniciar()
