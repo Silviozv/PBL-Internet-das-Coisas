@@ -44,38 +44,60 @@ def server_request_tcp():
 
             try:
 
-                command = int(connection.tcp_device.recv(2048).decode('utf-8'))
+                request = eval(connection.tcp_device.recv(2048).decode('utf-8'))
+                request['Comando'] = int(request['Comando'])
 
                 # Opções de respostas de comandos em desenvolvimento
-                if (command == 1):
+                if (request['Comando'] == 0):
+
+                    if ( not (-1 < request['Comando'] <= len(sensor.get_available_commands()) + 2)):
+                        raise ValueError
+     
+                    commands_description = sensor.get_commands_description()
+                    response = {'Tipo de resposta': 'Dicionário', 'Resposta': commands_description}
+                    connection.tcp_device.send(str(response).encode('utf-8'))
+
+                elif (request['Comando'] == 1):
+
+                    response_message = sensor.turn_on()
+                    response = {'Tipo de resposta': 'Mensagem de resposta', 'Resposta': response_message}
+                    connection.tcp_device.send(str(response).encode('utf-8'))
+
+                elif (request['Comando'] == 2):
+
+                    response_message = sensor.turn_off()
+                    response = {'Tipo de resposta': 'Mensagem de resposta', 'Resposta': response_message}
+                    connection.tcp_device.send(str(response).encode('utf-8'))
+
+                elif (request['Comando'] == 3):
+                    
+                    status = sensor.get_status()
+
+                    if (status == 'ligado'):
+
+                        response = {'Tipo de resposta': 'Permissão de coleta de dados UDP', 'Resposta': 'Coleta permitida', 'Justificativa': ''}
+
+                    elif (status == 'desligado'):
+
+                        response = {'Tipo de resposta': 'Permissão de coleta de dados UDP', 'Resposta': 'Coleta não permitida', 'Justificativa': 'Dispositivo desligado, não é possível coletar os dados'}
+
+                    connection.tcp_device.send(str(response).encode('utf-8'))
+
+                elif (request['Comando'] == 4):
+                    
+                    general_description = sensor.get_general_description()
+                    response = {'Tipo de resposta': 'Dicionário', 'Resposta': general_description}
+                    connection.tcp_device.send(str(response).encode('utf-8'))
+
+                elif (request['Comando'] == 5):
 
                     available_commands = sensor.get_available_commands()
-                    connection.tcp_device.send(str(available_commands).encode('utf-8'))
-
-                elif (command == 2):
-
-                    general_description = sensor.get_general_description()
-                    connection.tcp_device.send(str(general_description).encode('utf-8'))
-
-                elif (command == 3):
-                    
-                    response = sensor.turn_on()
+                    response = {'Tipo de resposta': 'Dicionário', 'Resposta': available_commands}
                     connection.tcp_device.send(str(response).encode('utf-8'))
 
-                elif (command == 4):
-                    
-                    response = sensor.turn_off()
-                    connection.tcp_device.send(str(response).encode('utf-8'))
-
-                elif (command == 5):
-
-                    status = sensor.get_status()
-                    connection.tcp_device.send(status.encode('utf-8'))
-
-                elif (command == 6):
-
-                    status = sensor.get_type()
-                    connection.tcp_device.send(status.encode('utf-8'))
+            except (ValueError) as e:
+                response = {'Tipo de resposta': 'Mensagem de resposta', 'Resposta': 'Comando inválido'}
+                connection.tcp_device.send(str(response).encode('utf-8'))
 
             except (ConnectionAbortedError) as e:
                 pass
