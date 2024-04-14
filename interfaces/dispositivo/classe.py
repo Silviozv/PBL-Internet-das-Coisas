@@ -7,9 +7,11 @@ class Sensor:
 
         self.local_ip = socket.gethostbyname( socket.gethostname())
         self.description = 'Sensor de temperatura'
-        self.type = 'Sensor'
         self.status = 'desligado'
         self.temperature = '0 °C'
+
+        self.available_commands = {'1': 'Ligar', '2': 'Desligar', '3': 'Retornar medida de temperatura'}
+        self.commands_description = {'1': {'Entrada': '', 'Método HTTP': 'POST'}, '2': {'Entrada': '', 'Método HTTP': 'POST'}, '3': {'Entrada': '', 'Método HTTP': 'GET'}}
 
     def get_atributes(self) -> str:
 
@@ -27,21 +29,20 @@ class Sensor:
 
         return self.status
     
-    def get_type(self) -> str:
-
-        return self.type
-    
     def get_general_description(self) -> dict:
 
         status = self.status.capitalize()
         general_description = {'Descrição': self.description, 'Status': status} 
         return general_description
     
-    def get_available_commands(self) -> list:
+    def get_available_commands(self) -> dict:
 
-        available_commands = ['Ligar', 'Desligar', 'Retornar medida de temperatura']
-        return available_commands
+        return self.available_commands
     
+    def get_commands_description(self) -> dict:
+
+        return self.commands_description
+
     def set_temperature(self) -> str:
 
         try:
