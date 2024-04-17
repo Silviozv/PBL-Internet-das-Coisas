@@ -95,6 +95,11 @@ def server_request_tcp():
                     response = {'Tipo de resposta': 'Dicionário', 'Resposta': available_commands}
                     connection.tcp_device.send(str(response).encode('utf-8'))
 
+                elif (request['Comando'] == -1):
+
+                    response = 'Recebido'
+                    connection.tcp_device.send(response.encode('utf-8'))
+
             except (ValueError) as e:
                 response = {'Tipo de resposta': 'Mensagem de resposta', 'Resposta': 'Comando inválido'}
                 connection.tcp_device.send(str(response).encode('utf-8'))
@@ -107,19 +112,9 @@ def send_data_udp():
 
     while True:
             
-        if (connection.server_ip != ""):
-
-            if (connection.server_connected == True and sensor.status == 'ligado'):
-
-                data = sensor.get_returning_data()
-                connection.udp_device.sendto( str(data).encode('utf-8'), (connection.server_ip, connection.udp_port))
-
-            elif (connection.server_connected == False):
-
-                connection.udp_device.sendto(("Conexao encerrada").encode('utf-8'), (connection.server_ip, connection.udp_port))
-
-                with connection.lock:
-                    connection.server_ip = ""
+        if (connection.server_ip != "" and sensor.status == 'ligado'):
+            data = sensor.get_returning_data()
+            connection.udp_device.sendto( str(data).encode('utf-8'), (connection.server_ip, connection.udp_port))
 
 def iniciar():
 

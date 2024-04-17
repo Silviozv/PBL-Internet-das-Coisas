@@ -183,6 +183,7 @@ class Connection_device:
 
             with self.lock:
                 self.server_connected = False
+                self.server_ip = ""
                 self.tcp_device.close()
                 self.restart_tcp_connection()
 

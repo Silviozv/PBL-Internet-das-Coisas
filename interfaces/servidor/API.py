@@ -8,12 +8,14 @@ app = Flask(__name__)
 @app.route('/devices/',methods=['GET'])
 def get_devices_ip():
 
+    servidor.validate_communication()
     return jsonify(servidor.get_devices_ip())
 
 # Enviar comando do tipo de retorno de dados
 @app.route('/devices/<string:device_ip>/commands/<string:command>',methods=['GET'])
 def get_device_data( device_ip, command):
 
+    servidor.validate_communication()
     request = {'Comando': command}
     return jsonify(servidor.send_command(device_ip, request))
 
@@ -21,6 +23,7 @@ def get_device_data( device_ip, command):
 @app.route('/devices/<string:device_ip>/commands/<string:command>',methods=['POST'])
 def set_device_state( device_ip, command):
 
+    servidor.validate_communication()
     request = {'Comando': command}
     return jsonify(servidor.send_command(device_ip, request))
 
@@ -28,6 +31,7 @@ def set_device_state( device_ip, command):
 @app.route('/devices/<string:device_ip>/commands/<string:command>',methods=['PATCH'])
 def set_device_data( device_ip, command):
 
+    servidor.validate_communication()
     request = {'Comando': command}
     return jsonify(servidor.send_command(device_ip, request))
 

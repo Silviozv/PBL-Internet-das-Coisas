@@ -26,27 +26,9 @@ def receive_data_udp():
     while True:
 
         data, address = connection_server.udp_server.recvfrom(2048)
+        with connection_server.lock:
+            storage.data_udp_devices[address[0]] = eval(data.decode('utf-8'))
 
-        if data.decode('utf-8') == "Conexao encerrada":
-
-            if (address[0]) in storage.data_udp_devices:
-                
-                with connection_server.lock:
-                    storage.data_udp_devices.pop(address[0])
-            
-            with connection_server.lock:
-                storage.connections.pop(address[0])
-            #print("Lista dados = ", storage.data_udp_devices)
-            #print("Lista ips = ", storage.connections)
-
-        else:
-
-            #print(data.decode('utf-8'))
-            #print(address[0])
-            with connection_server.lock:
-                storage.data_udp_devices[address[0]] = eval(data.decode('utf-8'))
-            #print("Lista dados = ", storage.data_udp_devices)
-            #print("Lista ips = ", storage.connections)
 
 # Envio de comandos para o dispositivo
 def send_command(device_ip: str, request: dict):
@@ -65,6 +47,22 @@ def send_command(device_ip: str, request: dict):
             response = {'Tipo de resposta': 'Mensagem de resposta', 'Resposta': response['Justificativa']}
 
     return response
+
+def validate_communication(): 
+
+    keys = []
+
+    for key in storage.connections.keys():
+        try:
+            request = {'Comando': '-1'}
+            storage.connections[key].send(str(request).encode('utf-8'))
+            storage.connections[key].recv(2048).decode('utf-8')
+
+        except (ConnectionResetError) as e:
+            keys.append(key)
+            
+    for i in range(len(keys)):   
+        storage.connections.pop(keys[i])
 
 def get_devices_ip():
 
