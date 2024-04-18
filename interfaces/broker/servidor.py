@@ -18,7 +18,7 @@ def receive_connection_tcp():
 
         connection_sender, address_sender = connection_server.tcp_server.accept()
         with connection_server.lock:
-            device_id = calculate_device_id()
+            device_id = calculate_device_id(address_sender[0])
             storage.connections_id[device_id] = address_sender[0]
             storage.connections[address_sender[0]] = connection_sender
             storage.devices_commands_description[address_sender[0]] = eval(storage.connections[address_sender[0]].recv(2048).decode('utf-8'))
@@ -124,13 +124,15 @@ def get_data_udp( device_ip: str) -> dict:
             
     return data
 
-def calculate_device_id() -> str:
+def calculate_device_id( device_ip: str) -> str:
 
-    id_number = 10
-    id = "DIS10"
-    while id in storage.connections:
+    aux_position = device_ip.find('.')
 
-        id_number += 1
-        id = f"DIS{id_number}"
+    while (aux_position != -1):
+        device_ip = device_ip[(aux_position + 1):]
+        aux_position = device_ip.find('.')
+    
+
+    id = f"DE{device_ip}"
     
     return id

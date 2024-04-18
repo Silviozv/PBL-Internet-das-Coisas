@@ -14,7 +14,7 @@ def menu():
     while True:
  
         show_scream(show_msg)
-        option = input("\n  > ")
+        option = input("\n  > ").strip()
 
         # Respostas para os casos em desenvolvimento
         if (option == '1'):
