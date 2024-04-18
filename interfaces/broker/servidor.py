@@ -1,4 +1,3 @@
-import threading
 import time
 from classe import Storage, Connection_server
 
@@ -71,28 +70,29 @@ def send_command(device_id: str, request: dict):
 
     return response
 
-def validate_communication(): 
+def validate_communication( device_id: str) -> bool: 
 
-    keys = []
+    connected = True
 
-    for key in storage.connections_id.keys():
-        try:
-            device_ip = storage.connections_id[key]
+    try:
+        device_ip = storage.connections_id[device_id]
 
-            request = {'Comando': '-1'}
-            storage.connections[device_ip].send(str(request).encode('utf-8'))
-            storage.connections[device_ip].recv(2048).decode('utf-8')
+        request = {'Comando': '0'}
+        storage.connections[device_ip].send(str(request).encode('utf-8'))
+        storage.connections[device_ip].recv(2048).decode('utf-8')
 
-        except (ConnectionResetError) as e:
-            keys.append(key)
+    except (ConnectionResetError) as e:
+        connected = False
             
-    for i in range(len(keys)):   
-        device_ip = storage.connections_id[keys[i]]
-        storage.connections_id.pop(keys[i])
+    if (connected == False):  
+        device_ip = storage.connections_id[device_id]
+        storage.connections_id.pop(device_id)
         storage.connections.pop(device_ip)
         storage.devices_commands_description.pop(device_ip)
         if device_ip in storage.data_udp_devices:
             storage.data_udp_devices.pop(device_ip)
+
+    return connected
 
 def get_devices_id():
 
@@ -101,7 +101,6 @@ def get_devices_id():
 def get_device_commands_description( device_id: str):
 
     device_ip = storage.connections_id[device_id]
-
     return storage.devices_commands_description[device_ip]
 
 def get_data_udp( device_ip: str) -> dict:
@@ -113,7 +112,6 @@ def get_data_udp( device_ip: str) -> dict:
         storage.data_udp_devices[device_ip]['Sinalizador de mudança'] = False
 
         while (storage.data_udp_devices[device_ip]['Sinalizador de mudança'] == False and data != {}):
-
             end = time.time()
             if (end - begin == 1):
                 data = {}
@@ -131,8 +129,6 @@ def calculate_device_id( device_ip: str) -> str:
     while (aux_position != -1):
         device_ip = device_ip[(aux_position + 1):]
         aux_position = device_ip.find('.')
-    
 
     id = f"DE{device_ip}"
-    
     return id
