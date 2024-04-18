@@ -22,7 +22,6 @@ def receive_connection_tcp():
             storage.connections[address_sender[0]] = connection_sender
             storage.devices_commands_description[address_sender[0]] = eval(storage.connections[address_sender[0]].recv(2048).decode('utf-8'))
             storage.connections[address_sender[0]].send(device_id.encode('utf-8'))
-            print(storage.devices_commands_description[address_sender[0]])
         print("Nova conexao:", address_sender)
 
 # Receber os dados enviados por udp (parece que funciona) (retirar os prints depois)
