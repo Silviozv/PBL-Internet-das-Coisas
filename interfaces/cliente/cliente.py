@@ -50,9 +50,9 @@ def device_menu(server_ip: str, device_ip: str):
     while (option != '4'):
 
         if (option == '1'):
-            url = (f'http://{server_ip}:5070/devices/{device_ip}/commands/0')
+            url = (f'http://{server_ip}:5070/devices/{device_ip}/commands/description')
             response = requests.get(url).json()
-            amount_commands = len(response['Resposta'])
+            amount_commands = len(response)
 
             url = (f'http://{server_ip}:5070/devices/{device_ip}/commands/{amount_commands + 1}')
             response = requests.get(url).json()
@@ -64,9 +64,9 @@ def device_menu(server_ip: str, device_ip: str):
                 print(f"{key}: {general_description[key]}")
         
         elif (option == '2'):
-            url = (f'http://{server_ip}:5070/devices/{device_ip}/commands/0')
+            url = (f'http://{server_ip}:5070/devices/{device_ip}/commands/description')
             response = requests.get(url).json()
-            amount_commands = len(response['Resposta'])
+            amount_commands = len(response)
 
             url = (f'http://{server_ip}:5070/devices/{device_ip}/commands/{amount_commands + 2}')
             response = requests.get(url).json()
@@ -78,9 +78,8 @@ def device_menu(server_ip: str, device_ip: str):
                 print(f"{key}: {available_commands[key]}")
         
         elif (option == '3'):
-            url = (f'http://{server_ip}:5070/devices/{device_ip}/commands/0')
-            response = requests.get(url).json()
-            commands_description = response['Resposta']
+            url = (f'http://{server_ip}:5070/devices/{device_ip}/commands/description')
+            commands_description = requests.get(url).json()
 
             command = input("\nComando: ").strip()
 
