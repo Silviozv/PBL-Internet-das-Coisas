@@ -1,4 +1,3 @@
-import socket
 import threading  
 import os
 from classe import Sensor, Connection_device
@@ -60,7 +59,12 @@ def server_request_tcp():
                     raise ValueError
 
                 # Opções de respostas de comandos em desenvolvimento
-                if (request['Comando'] == 1):
+                if (request['Comando'] == 0):
+
+                    response = 'Recebido'
+                    connection.tcp_device.send(response.encode('utf-8'))
+
+                elif (request['Comando'] == 1):
 
                     response_message = sensor.turn_on()
                     response = {'Tipo de resposta': 'Mensagem de resposta', 'Resposta': response_message}
@@ -73,7 +77,6 @@ def server_request_tcp():
                     connection.tcp_device.send(str(response).encode('utf-8'))
 
                 elif (request['Comando'] == 3):
-                    
                     pass
 
                 elif (request['Comando'] == 4):
@@ -87,11 +90,6 @@ def server_request_tcp():
                     available_commands = sensor.get_available_commands()
                     response = {'Tipo de resposta': 'Dicionário', 'Resposta': available_commands}
                     connection.tcp_device.send(str(response).encode('utf-8'))
-
-                elif (request['Comando'] == -1):
-
-                    response = 'Recebido'
-                    connection.tcp_device.send(response.encode('utf-8'))
 
             except (ValueError) as e:
                 response = {'Tipo de resposta': 'Mensagem de resposta', 'Resposta': 'Comando inválido'}
