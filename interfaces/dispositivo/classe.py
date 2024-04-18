@@ -8,15 +8,19 @@ class Sensor:
         self.local_ip = socket.gethostbyname( socket.gethostname())
         self.description = 'Sensor de temperatura'
         self.status = 'desligado'
-        self.temperature = '0 °C'
+        self.temperature = '-----'
 
         self.available_commands = {'1': 'Ligar', '2': 'Desligar', '3': 'Retornar medida de temperatura'}
-        self.commands_description = {'1': {'Entrada': '', 'Método HTTP': 'POST'}, '2': {'Entrada': '', 'Método HTTP': 'POST'}, '3': {'Entrada': '', 'Método HTTP': 'GET'}}
+        self.commands_description = {'1': {'Entrada': '', 'Método HTTP': 'POST', 'Coleta de dados UDP': False}, '2': {'Entrada': '', 'Método HTTP': 'POST', 'Coleta de dados UDP': False}, '3': {'Entrada': '', 'Método HTTP': 'GET', 'Coleta de dados UDP': True}}
 
-    def get_atributes(self) -> str:
+    def get_query_data(self, server_connected: bool, id: str) -> str:
 
         status = self.status.capitalize()
-        response = f"IP local: {self.local_ip}\nDescrição: {self.description}\nStatus: {status}\nTemperatura: {self.temperature}"
+        if (server_connected == False):
+            status_server = 'Desconectado'
+        elif (server_connected == True):
+            status_server = 'Conectado'
+        response = {'ID': id,'Status': status, 'Temperatura': self.temperature, 'Servidor': status_server}
         return response
 
     # Dados a serem enviados via UDP
@@ -46,10 +50,10 @@ class Sensor:
     def set_temperature(self) -> str:
 
         try:
-            new_temperature = int(input("\nTemperatura: "))
+            new_temperature = int(input("\n  Temperatura: "))
 
             if -50 < new_temperature < 300:
-                self.temperature = (f'{new_temperature} °C')
+                self.temperature = (f'{new_temperature}°C')
                 return "Medida de temperatura atualizada"
             else:
                 raise ValueError
@@ -148,6 +152,8 @@ class Connection_device:
 
     def __init__(self):
 
+        self.device_id = "-----"
+
         self.tcp_port = 5050
         self.udp_port = 5060
 
@@ -158,12 +164,14 @@ class Connection_device:
         self.server_connected = False
         self.lock = threading.Lock()
 
-    def start_connection(self) -> str:
+    def start_connection(self, commands_description: dict) -> str:
 
         if (self.server_connected == False):
-            server_ip = input("\nIP servidor: ")
+            server_ip = input("\n  IP servidor: ")
             try:
                 self.tcp_device.connect( (server_ip, self.tcp_port))
+                self.tcp_device.send(str(commands_description).encode('utf-8'))
+                self.device_id = self.tcp_device.recv(2048).decode('utf-8')
 
                 with self.lock:
                     self.server_ip = server_ip
@@ -184,6 +192,7 @@ class Connection_device:
             with self.lock:
                 self.server_connected = False
                 self.server_ip = ""
+                self.device_id = "-----"
                 self.tcp_device.close()
                 self.restart_tcp_connection()
 
