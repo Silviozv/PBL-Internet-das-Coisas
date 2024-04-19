@@ -143,6 +143,8 @@ def show_scream( show_msg):
         print("+-----------------------------------------------------------------------------+")
 
     else:
+        space_id = 5 - len(show_msg['Temperatura'])
+
         if (show_msg['Status'] == 'Ligado'):
             space_status = 3
         else:
@@ -156,7 +158,7 @@ def show_scream( show_msg):
             space_server = 0
 
         print("+-----------+-------------------+--------------------+------------------------+")
-        print("| ID: " + show_msg['ID'] + " | Status: " + show_msg['Status'] + " " * space_status + " | Temperatura: " + show_msg['Temperatura'] + " " * space_temperature + " | Servidor: " + show_msg['Servidor'] + " " * space_server + " |")
+        print("| ID: " + show_msg['ID'] + " " * space_status + " | Status: " + show_msg['Status'] + " " * space_status + " | Temperatura: " + show_msg['Temperatura'] + " " * space_temperature + " | Servidor: " + show_msg['Servidor'] + " " * space_server + " |")
         print("+-----------+-------------------+--------------------+------------------------+")
 
 def clear_terminal():
