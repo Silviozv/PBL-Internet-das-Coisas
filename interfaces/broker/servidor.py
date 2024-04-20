@@ -45,21 +45,17 @@ def send_command(device_id: str, request: dict):
 
             storage.connections[device_ip].send(str(request).encode('utf-8'))
             response = eval(storage.connections[device_ip].recv(2048).decode('utf-8'))
-            print(1)
 
         elif ( storage.devices_commands_description[device_ip][request['Comando']]['Coleta de dados UDP'] == True):
-            print(5)
+            
             data = get_data_udp( device_ip)
             if ( data == {}):
-                response = {'Tipo de resposta': 'Mensagem de resposta', 'Resposta': 'Não foram retornados dados do dispositivo'}
-                print(2)
+                response = {'Resposta': 'Não foram retornados dados do dispositivo'}
             elif (data['Válido'] == False):
-                response = {'Tipo de resposta': 'Mensagem de resposta', 'Resposta': data['Justificativa']}
-                print(3)
+                response = {'Resposta': data['Justificativa']}
             else:
                 data.pop('Válido')
-                response = {'Tipo de resposta': 'Dicionário', 'Resposta': data}
-                print(4)
+                response = {'Resposta': data}
 
     else:
 
