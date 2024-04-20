@@ -8,7 +8,16 @@ def initial_menu():
 
         if (option == '1'):
             server_ip = input("\nIP do servidor: ")
-            server_menu( server_ip)
+
+            try:
+                url = (f'http://{server_ip}:5070/')
+                response_code = requests.head(url).status_code
+
+                if ( response_code == 200):
+                    server_menu( server_ip)
+
+            except (requests.exceptions.ConnectTimeout, requests.exceptions.ConnectionError) as e:
+                print("\nConexão Impossibilitada")
 
         option = input("\n[1] Conectar ao servidor\n[2] Sair\n\n> ")
 
@@ -93,10 +102,10 @@ def device_menu(server_ip: str, device_ip: str):
                 url = (f'http://{server_ip}:5070/devices/{device_ip}/commands/{command}')
                 response = requests.patch(url).json()
 
-            if ( response['Tipo de resposta'] == "Mensagem de resposta"):
+            if ( type(response['Resposta']) == str):
                 print(f"\n{response['Resposta']}")
 
-            elif ( response['Tipo de resposta'] == "Dicionário"):
+            elif ( type(response['Resposta']) == dict):
                 data = response['Resposta']
 
                 print()
@@ -107,6 +116,12 @@ def device_menu(server_ip: str, device_ip: str):
 
     return 
 
+def clear_terminal():
+    
+    if os.name == 'nt':  # Windows
+        os.system('cls')
+    else:  # Outros sistemas (Linux, macOS)
+        os.system('clear')
 
 if __name__ == "__main__":
 
