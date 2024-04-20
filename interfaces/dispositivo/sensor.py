@@ -67,13 +67,13 @@ def server_request_tcp():
                 elif (request['Comando'] == 1):
 
                     response_message = sensor.turn_on()
-                    response = {'Tipo de resposta': 'Mensagem de resposta', 'Resposta': response_message}
+                    response = {'Resposta': response_message}
                     connection.tcp_device.send(str(response).encode('utf-8'))
 
                 elif (request['Comando'] == 2):
 
                     response_message = sensor.turn_off()
-                    response = {'Tipo de resposta': 'Mensagem de resposta', 'Resposta': response_message}
+                    response = {'Resposta': response_message}
                     connection.tcp_device.send(str(response).encode('utf-8'))
 
                 elif (request['Comando'] == 3):
@@ -82,17 +82,17 @@ def server_request_tcp():
                 elif (request['Comando'] == 4):
                     
                     general_description = sensor.get_general_description()
-                    response = {'Tipo de resposta': 'Dicionário', 'Resposta': general_description}
+                    response = {'Resposta': general_description}
                     connection.tcp_device.send(str(response).encode('utf-8'))
 
                 elif (request['Comando'] == 5):
 
                     available_commands = sensor.get_available_commands()
-                    response = {'Tipo de resposta': 'Dicionário', 'Resposta': available_commands}
+                    response = {'Resposta': available_commands}
                     connection.tcp_device.send(str(response).encode('utf-8'))
 
             except (ValueError) as e:
-                response = {'Tipo de resposta': 'Mensagem de resposta', 'Resposta': 'Comando inválido'}
+                response = {'Resposta': 'Comando inválido'}
                 connection.tcp_device.send(str(response).encode('utf-8'))
 
             except (ConnectionAbortedError) as e:   # Quando o dispostivo cancela a comunicação
@@ -143,22 +143,13 @@ def show_scream( show_msg):
         print("+-----------------------------------------------------------------------------+")
 
     else:
-        space_id = 5 - len(show_msg['Temperatura'])
-
-        if (show_msg['Status'] == 'Ligado'):
-            space_status = 3
-        else:
-            space_status = 0
-        
+        space_id = 5 - len(show_msg['ID'])
+        space_status = 9 - len(show_msg['Status'])
         space_temperature = 5 - len(show_msg['Temperatura'])
-
-        if (show_msg['Servidor'] == 'Conectado'):
-            space_server = 3
-        else:
-            space_server = 0
+        space_server = 12 - len(show_msg['Servidor'])
 
         print("+-----------+-------------------+--------------------+------------------------+")
-        print("| ID: " + show_msg['ID'] + " " * space_status + " | Status: " + show_msg['Status'] + " " * space_status + " | Temperatura: " + show_msg['Temperatura'] + " " * space_temperature + " | Servidor: " + show_msg['Servidor'] + " " * space_server + " |")
+        print("| ID: " + show_msg['ID'] + " " * space_id + " | Status: " + show_msg['Status'] + " " * space_status + " | Temperatura: " + show_msg['Temperatura'] + " " * space_temperature + " | Servidor: " + show_msg['Servidor'] + " " * space_server + " |")
         print("+-----------+-------------------+--------------------+------------------------+")
 
 def clear_terminal():
