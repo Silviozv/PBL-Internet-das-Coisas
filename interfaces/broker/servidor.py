@@ -1,14 +1,13 @@
+import threading
 import time
 from classe import Storage, Connection_server
 
-# lógica embaralhada
-# recebe as conexões; armazena os sockets e printa; o comando de resposta é um rascunho
-
-# É para colocar como global?
-
 storage = Storage()
 connection_server = Connection_server()
-print(connection_server.server_ip)
+print("\nServidor iniciando...")
+print("IP do servidor:", connection_server.server_ip)
+print()
+
 
 # Aceitar dispositivos que iniciam conexões (parece que funciona) (é preciso retirar o print depois e a função coletar)
 def receive_connection_tcp():
@@ -16,13 +15,18 @@ def receive_connection_tcp():
     while True:
 
         connection_sender, address_sender = connection_server.tcp_server.accept()
-        with connection_server.lock:
-            device_id = calculate_device_id(address_sender[0])
-            storage.connections_id[device_id] = address_sender[0]
-            storage.connections[address_sender[0]] = connection_sender
-            storage.devices_commands_description[address_sender[0]] = eval(storage.connections[address_sender[0]].recv(2048).decode('utf-8'))
-            storage.connections[address_sender[0]].send(device_id.encode('utf-8'))
-        print("Nova conexao:", address_sender)
+        threading.Thread( target=storage_connection_tcp, args=[ connection_sender, address_sender[0]]).start()
+
+
+def storage_connection_tcp( connection_sender: object, address_sender: str):
+    with connection_server.lock:
+        device_id = calculate_device_id(address_sender[0])
+        storage.connections_id[device_id] = address_sender[0]
+        storage.connections[address_sender[0]] = connection_sender
+        storage.devices_commands_description[address_sender[0]] = eval(storage.connections[address_sender[0]].recv(2048).decode('utf-8'))
+        storage.connections[address_sender[0]].send(device_id.encode('utf-8'))
+    print("Nova conexao:", address_sender)
+
 
 # Receber os dados enviados por udp (parece que funciona) (retirar os prints depois)
 def receive_data_udp():
@@ -65,6 +69,7 @@ def send_command(device_id: str, request: dict):
 
     return response
 
+
 def validate_communication( device_id: str) -> bool: 
 
     connected = True
@@ -89,14 +94,17 @@ def validate_communication( device_id: str) -> bool:
 
     return connected
 
+
 def get_devices_id():
 
     return list(storage.connections_id.keys())
+
 
 def get_device_commands_description( device_id: str):
 
     device_ip = storage.connections_id[device_id]
     return storage.devices_commands_description[device_ip]
+
 
 def get_data_udp( device_ip: str) -> dict:
     
@@ -116,6 +124,7 @@ def get_data_udp( device_ip: str) -> dict:
         data = {}
             
     return data
+
 
 def calculate_device_id( device_ip: str) -> str:
 
