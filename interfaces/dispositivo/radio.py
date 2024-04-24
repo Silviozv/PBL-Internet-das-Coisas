@@ -1,4 +1,4 @@
-import socket
+import os
 import threading  
 from classe import Radio, Connection_device
 
@@ -8,30 +8,43 @@ connection = Connection_device()
 # Menu de opções diretas para o dispositivo (parece que as opções funcionam bem, incluindo a conexão e desconexão)
 def menu():
 
+    show_msg = 'Sistema iniciado'
+
     while True:
-        
-        option = input("\n[1] Conectar ao servidor\n[2] Desconectar do servidor\n[3] Ligar\n[4] Consultar dados\n[5] Setar Música\n[6] Desligar\n\n> ").strip()  
+ 
+        show_scream(show_msg)
+        option = input("\n  > ").strip()
 
         # Respostas para os casos em desenvolvimento
         if (option == '1'):
-            print(f"\n{connection.start_connection()}")
+            show_msg = connection.start_connection(radio.get_commands_description())
 
         elif (option == '2'):
-            print(f"\n{connection.end_connection()}")
+            show_msg = connection.end_connection()
 
         elif (option == '3'):
-            print(f"\n{radio.turn_on()}")
+            show_msg = radio.turn_on()
         
         elif (option == '4'):       
-            print(f"\n{radio.get_atributes()}")
+            show_msg = radio.turn_off()
             
         elif (option == '5'):
-            new_music = input("Música: ")
-            print(f"\n{radio.set_music(new_music)}")
+            show_msg = radio.get_query_data(connection.server_connected, connection.device_id)
          
         elif (option == '6'):
+            music = input("\n  Música: ")
+            show_msg = radio.set_music(music)
 
-            print(f"\n{radio.turn_off()}")
+        elif (option == '7'):
+            show_msg = radio.play_music()
+
+        elif (option == '8'):
+            show_msg = radio.pause_music()    
+
+        else:
+            show_msg = 'Opção inválida'
+
+        clear_terminal()
 
 def server_request_tcp():
 
@@ -87,23 +100,63 @@ def server_request_tcp():
             except (ConnectionAbortedError) as e:
                 pass
 
-# Enviar os dados via UDP (parece que ta funcionando)
-def warning_end_connection():    
+def show_scream( show_msg):
 
-    while True:
-            
-        if (connection.server_ip != "" and connection.server_connected == False):
+    print("\n+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-+")
+    print("|                        APARELHO DE SOM VIA INTERNET                         |")
+    print("+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-+")
 
-                connection.udp_device.sendto(("Conexao encerrada").encode('utf-8'), (connection.server_ip, connection.udp_port))
+    print('''+-----------------------------------------------------------------------------+
+|                                                                             |
+|                      [ 1 ]    CONECTAR AO SERVIDOR                          |
+|                      [ 2 ]    DESCONECTAR DO SERVIDOR                       |
+|                      [ 3 ]    LIGAR                                         |
+|                      [ 4 ]    DESLIGAR                                      |
+|                      [ 5 ]    CONSULTAR DADOS                               |
+|                      [ 6 ]    SETAR MÚSICA                                  |
+|                      [ 7 ]    TOCAR                                         |
+|                      [ 8 ]    PAUSAR                                        |
+|                                                                             |
++-----------------------------------------------------------------------------+''')
 
-                with connection.lock:
-                    connection.server_ip = ""
+    if (type(show_msg) == str):
+        len_msg = len(show_msg)
+        space_beginning = (77 - len_msg) // 2
+        space_ending = 77 - (space_beginning + len_msg)
+        print("+-----------------------------------------------------------------------------+")
+        print("|" + " " * space_beginning + show_msg + " " * space_ending + "|")
+        print("+-----------------------------------------------------------------------------+")
+
+    else:
+        space_id = 9 - len(show_msg['ID'])
+        space_status = 13 - len(show_msg['Status'])
+        space_server = 16 - len(show_msg['Servidor'])
+
+        print("+------------------+--------------------------+-------------------------------+")
+        print("|    ID: " + show_msg['ID'] + " " * space_id + " |    Status: " + show_msg['Status'] + " " * space_status + " |    Servidor: " + show_msg['Servidor'] + " " * space_server + " |")
+        print("+------------------+--------------------------+-------------------------------+")
+       
+        if ( show_msg['Música atual'] != '-----'):
+
+            space_before_music = (75 - len(show_msg['Música atual'])) // 2
+            space_after_music = 75 - (space_before_music + len(show_msg['Música atual']))
+
+            print("| " + " " * space_before_music + show_msg['Música atual'] + " " * space_after_music + " |")
+            print("|" + " " * 35 + show_msg['Status da música'] + " " * 35 + "|")
+            print("+-----------------------------------------------------------------------------+")
+
+
+def clear_terminal():
+    
+    if os.name == 'nt':  # Windows
+        os.system('cls')
+    else:  # Outros sistemas (Linux, macOS)
+        os.system('clear')
 
 def iniciar():
 
     # A lógica de receber comandos e poder executar opções do menu parecem funcionar
     threading.Thread(target=server_request_tcp).start()
-    threading.Thread(target=warning_end_connection).start()
     menu()
 
 if __name__=="__main__":

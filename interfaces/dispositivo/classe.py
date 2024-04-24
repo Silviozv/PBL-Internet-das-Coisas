@@ -90,42 +90,72 @@ class Radio:
 
         self.local_ip = socket.gethostbyname( socket.gethostname())
         self.description = 'Aparelho de som via internet'
-        self.type = 'Atuante'
         self.status = 'desligado'
-        self.music = 'Nenhuma'
+        self.music = '-----'
+        self.music_status = '-------'
 
-    def get_atributes(self) -> str:
+        self.available_commands = {'1': 'Ligar', '2': 'Desligar', '3': 'Setar música', '4': 'Tocar', '5': 'Pausar'}
+        self.commands_description = {'1': {'Entrada': '', 'Método HTTP': 'POST', 'Coleta de dados UDP': False}, '2': {'Entrada': '', 'Método HTTP': 'POST', 'Coleta de dados UDP': False}, '3': {'Entrada': 'Música', 'Método HTTP': 'PATCH', 'Coleta de dados UDP': False}, '4': {'Entrada': '', 'Método HTTP': 'POST', 'Coleta de dados UDP': False}, '5': {'Entrada': '', 'Método HTTP': 'POST', 'Coleta de dados UDP': False}}
+
+    def get_query_data(self, server_connected: bool, id: str) -> str:
 
         status = self.status.capitalize()
-        response = f"IP local: {self.local_ip}\nDescrição: {self.description}\nStatus: {status}\nMúsica: {self.music}"
+        music = self.music.upper()
+        if (server_connected == False):
+            status_server = 'Desconectado'
+        elif (server_connected == True):
+            status_server = 'Conectado'
+        response = {'ID': id,'Status': status, 'Música atual': music, 'Status da música': self.music_status, 'Servidor': status_server}
         return response
     
     def get_status(self) -> str:
 
         return self.status
     
-    def get_type(self) -> str:
-
-        return self.type
-    
     def get_general_description(self) -> dict:
 
         status = self.status.capitalize()
-        general_description = {'Descrição': self.description, 'Status': status, 'Música': self.music} 
+        general_description = {'Descrição': self.description, 'Status do dispositivo': status, 'Música atual': self.music, 'Status da música': self.music_status} 
         return general_description
     
     def get_available_commands(self) -> list:
 
-        available_commands = ['Ligar', 'Desligar', 'Selecionar música']
-        return available_commands
+        return self.available_commands
     
+    def get_commands_description(self) -> dict:
+
+        return self.commands_description
+
     def set_music(self, new_music: str) -> str:
 
         with threading.Lock():
             self.music = new_music
+            self.music_status = 'Tocando'
 
-        return "Dado selecionado"
+        return "Música selecionada"
+    
+    def play_music(self):
+
+        if (self.music_status == '-------') or (self.music_status == 'Pausada'):
+            with threading.Lock():
+                self.music_status = 'Tocando'
+
+            return "A música foi colocada para tocar"
+
+        else:
+            return "A música já está tocando"
             
+    def pause_music(self):
+
+        if (self.music_status == '-------') or (self.music_status == 'Tocando'):
+            with threading.Lock():
+                self.music_status = 'Pausada'
+
+            return "A música foi pausada"
+
+        else:
+            return "A música já está pausada"        
+
     def turn_on(self) -> str:
 
         if self.status == 'desligado':
