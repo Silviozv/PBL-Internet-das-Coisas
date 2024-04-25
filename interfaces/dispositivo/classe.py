@@ -200,6 +200,7 @@ class Connection_device:
             server_ip = input("\n  IP servidor: ")
             try:
                 self.tcp_device.connect( (server_ip, self.tcp_port))
+                self.device_id = self.tcp_device.recv(2048).decode('utf-8')
                 self.tcp_device.send(str(commands_description).encode('utf-8'))
                 self.device_id = self.tcp_device.recv(2048).decode('utf-8')
 
