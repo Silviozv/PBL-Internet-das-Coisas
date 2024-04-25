@@ -23,6 +23,7 @@ def storage_connection_tcp( connection_sender: object, address_sender: str):
         device_id = calculate_device_id(address_sender[0])
         storage.connections_id[device_id] = address_sender[0]
         storage.connections[address_sender[0]] = connection_sender
+        storage.connections[address_sender[0]].send("Recebido".encode('utf-8'))
         storage.devices_commands_description[address_sender[0]] = eval(storage.connections[address_sender[0]].recv(2048).decode('utf-8'))
         storage.connections[address_sender[0]].send(device_id.encode('utf-8'))
     print("Nova conexao:", address_sender)
