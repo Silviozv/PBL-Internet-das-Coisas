@@ -47,7 +47,7 @@ def send_command(device_id: str, request: dict):
     if ( 1 <= int(request['Comando']) <= len(storage.devices_commands_description[device_ip])):
 
         if ( storage.devices_commands_description[device_ip][request['Comando']]['Coleta de dados UDP'] == False):
-
+            
             storage.connections[device_ip].send(str(request).encode('utf-8'))
             response = eval(storage.connections[device_ip].recv(2048).decode('utf-8'))
 

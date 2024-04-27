@@ -53,12 +53,12 @@ def set_device_state( device_id, command):
         return jsonify ({'Resposta': 'Dispositivo não encontrado'}), 404
 
 # Enviar comando do tipo mudar dado específico
-@app.route('/devices/<string:device_id>/commands/<string:command>',methods=['PATCH'])
-def set_device_data( device_id, command):
+@app.route('/devices/<string:device_id>/commands/<string:command>/<string:new_data>',methods=['PATCH'])
+def set_device_data( device_id, command, new_data):
 
     connected = servidor.validate_communication(device_id)
     if ( connected == True):
-        request = {'Comando': command}
+        request = {'Comando': command, "Entrada": new_data}
         return jsonify(servidor.send_command(device_id, request))
     elif ( connected == False):
         return jsonify ({'Resposta': 'Dispositivo não encontrado'}), 404
