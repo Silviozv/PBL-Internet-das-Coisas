@@ -172,6 +172,8 @@ class Radio:
         if (self.status == 'ligado'):
             with threading.Lock():
                 self.status = 'desligado'
+                if ( self.music != '-----'):
+                    self.music_status = 'Pausada'
 
             return "Dispositivo desligado"
 
@@ -225,13 +227,13 @@ class Connection_device:
                 self.server_ip = ""
                 self.device_id = "-----"
                 self.tcp_device.close()
-                self.restart_tcp_connection()
+                self.restart_tcp_obj()
 
             return "Conexão encerrada"
 
         else:
             return "Não há um servidor conectado"
 
-    def restart_tcp_connection(self):
+    def restart_tcp_obj(self):
 
         self.tcp_device = socket.socket( socket.AF_INET, socket.SOCK_STREAM)

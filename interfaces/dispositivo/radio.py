@@ -46,6 +46,7 @@ def menu():
 
         clear_terminal()
 
+# Receber requisições do servidor (O primeiro comando funciona)
 def server_request_tcp():
 
     while True:
@@ -58,47 +59,69 @@ def server_request_tcp():
 
             try:
 
-                request = connection.tcp_device.recv(2048).decode('utf-8')
+                request = eval(connection.tcp_device.recv(2048).decode('utf-8'))
+                request['Comando'] = int(request['Comando'])
 
-                request_parts = request.split()
-                command = int(request_parts[0])
+                if ( not (-1 < request['Comando'] <= len(radio.get_available_commands()) + 2)):
+                    raise ValueError
 
                 # Opções de respostas de comandos em desenvolvimento
-                if (command == 1):
+                if (request['Comando'] == 0):
 
-                    available_commands = radio.get_available_commands()
-                    connection.tcp_device.send(str(available_commands).encode('utf-8'))
-
-                elif (command == 2):
-
-                    general_description = radio.get_general_description()
-                    connection.tcp_device.send(str(general_description).encode('utf-8'))
-
-                elif (command == 3):
-                    
-                    response = radio.turn_on()
-                    connection.tcp_device.send(str(response).encode('utf-8'))
-
-                elif (command == 4):
-                    
-                    response = radio.turn_off()
-                    connection.tcp_device.send(str(response).encode('utf-8'))
-
-                elif (command == 5):
-
-                    request_parts.pop(0)
-                    music = ' '.join(request_parts)
-
-                    response = radio.set_music(music)
+                    response = 'Recebido'
                     connection.tcp_device.send(response.encode('utf-8'))
 
-                elif (command == 6):
+                elif (request['Comando'] == 1):
 
-                    type = radio.get_type()
-                    connection.tcp_device.send(str(type).encode('utf-8'))
+                    response_message = radio.turn_on()
+                    response = {'Resposta': response_message}
+                    connection.tcp_device.send(str(response).encode('utf-8'))
 
-            except (ConnectionAbortedError) as e:
+                elif (request['Comando'] == 2):
+
+                    response_message = radio.turn_off()
+                    response = {'Resposta': response_message}
+                    connection.tcp_device.send(str(response).encode('utf-8'))
+
+                elif (request['Comando'] == 3):
+                    
+                    response_message = radio.set_music(request['Entrada'])
+                    response = {'Resposta': response_message}
+                    connection.tcp_device.send(str(response).encode('utf-8'))
+
+                elif (request['Comando'] == 4):
+
+                    response_message = radio.play_music()
+                    response = {'Resposta': response_message}
+                    connection.tcp_device.send(str(response).encode('utf-8'))
+
+                elif (request['Comando'] == 5):
+
+                    response_message = radio.pause_music()
+                    response = {'Resposta': response_message}
+                    connection.tcp_device.send(str(response).encode('utf-8'))    
+
+                elif (request['Comando'] == 6):
+                    
+                    general_description = radio.get_general_description()
+                    response = {'Resposta': general_description}
+                    connection.tcp_device.send(str(response).encode('utf-8'))
+
+                elif (request['Comando'] == 7):
+
+                    available_commands = radio.get_available_commands()
+                    response = {'Resposta': available_commands}
+                    connection.tcp_device.send(str(response).encode('utf-8'))
+
+            except (ValueError) as e:
+                response = {'Resposta': 'Comando inválido'}
+                connection.tcp_device.send(str(response).encode('utf-8'))
+
+            except (ConnectionAbortedError) as e:   # Quando o dispostivo cancela a comunicação
                 pass
+
+            except (ConnectionResetError) as e:     # Quando o servidor é encerrado
+                connection.end_connection()
 
 def show_scream( show_msg):
 
