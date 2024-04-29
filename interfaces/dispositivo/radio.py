@@ -59,7 +59,13 @@ def server_request_tcp():
 
             try:
 
-                request = eval(connection.tcp_device.recv(2048).decode('utf-8'))
+                request = connection.tcp_device.recv(2048).decode('utf-8')
+
+                if (request == ""):
+                    raise ConnectionResetError
+                
+                request = eval(request)
+
                 request['Comando'] = int(request['Comando'])
 
                 if ( not (-1 < request['Comando'] <= len(radio.get_available_commands()) + 2)):
@@ -117,8 +123,8 @@ def server_request_tcp():
                 response = {'Resposta': 'Comando inválido'}
                 connection.tcp_device.send(str(response).encode('utf-8'))
 
-            except (ConnectionAbortedError) as e:   # Quando o dispostivo cancela a comunicação
-                pass
+            except (ConnectionAbortedError, OSError) as e:   # Quando o dispostivo cancela a comunicação
+                connection.end_connection()
 
             except (ConnectionResetError) as e:     # Quando o servidor é encerrado
                 connection.end_connection()
