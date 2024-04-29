@@ -4,14 +4,14 @@ from classe import Storage, Connection_server
 
 storage = Storage()
 connection_server = Connection_server()
-print("\nServidor iniciando...")
-print("IP do servidor:", connection_server.server_ip)
-print()
-
 
 # Aceitar dispositivos que iniciam conexões (parece que funciona) (é preciso retirar o print depois e a função coletar)
 def receive_connection_tcp():
     
+    print("\nServidor iniciando...")
+    print("IP do servidor:", connection_server.server_ip)
+    print()
+
     while True:
 
         connection_sender, address_sender = connection_server.tcp_server.accept()

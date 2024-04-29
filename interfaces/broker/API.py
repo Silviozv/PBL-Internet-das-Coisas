@@ -63,6 +63,5 @@ def set_device_data( device_id, command, new_data):
     elif ( connected == False):
         return jsonify ({'Resposta': 'Dispositivo não encontrado'}), 404
 
-threading.Thread( target=servidor.receive_connection_tcp).start()
-threading.Thread( target=servidor.receive_data_udp).start()
-app.run(port=5070,host='0.0.0.0')
+def start():
+    app.run(port=5070,host='0.0.0.0')
