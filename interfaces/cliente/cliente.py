@@ -113,6 +113,7 @@ def process_option( info: dict):
         try:
             if ( info['Opção'] == '1'):
                 url = (f"http://{info['IP servidor']}:5070/devices")
+                print("\n  Aguardando resposta do servidor...")
                 devices_ip = requests.get(url, timeout=5).json()
 
                 if (len(devices_ip) == 0):
@@ -129,6 +130,7 @@ def process_option( info: dict):
                 if (not(re.match(r'^DE\d+', device_id))):
                     raise ValueError
 
+                print("\n  Aguardando resposta do servidor...")
                 url = (f"http://{info['IP servidor']}:5070/devices")
                 devices_id = requests.get(url, timeout=5).json()
 
@@ -166,6 +168,7 @@ def process_option( info: dict):
         try:
             if ( info['Opção'] == '1'):
                 url = (f"http://{info['IP servidor']}:5070/devices/{info['ID dispositivo']}/commands/description")
+                print("\n  Aguardando resposta do servidor...")
                 response = requests.get(url, timeout=5)
                 
                 if ( response.status_code == 404):
@@ -186,6 +189,7 @@ def process_option( info: dict):
             
             elif ( info['Opção'] == '2'):
                 url = (f"http://{info['IP servidor']}:5070/devices/{info['ID dispositivo']}/commands/description")
+                print("\n  Aguardando resposta do servidor...")
                 response = requests.get(url, timeout=5)
 
                 if ( response.status_code == 404):
@@ -211,6 +215,7 @@ def process_option( info: dict):
                     raise ValueError
 
                 url = (f"http://{info['IP servidor']}:5070/devices/{info['ID dispositivo']}/commands/description")
+                print("\n  Aguardando resposta do servidor...")
                 response = requests.get(url, timeout=5)
 
                 if ( response.status_code == 404):
