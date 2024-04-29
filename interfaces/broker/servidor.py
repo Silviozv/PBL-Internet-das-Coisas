@@ -1,5 +1,6 @@
 import threading
 import time
+import socket
 from classe import Storage, Connection_server
 
 storage = Storage()
@@ -20,13 +21,25 @@ def receive_connection_tcp():
 
 def storage_connection_tcp( connection_sender: object, address_sender: str):
     with connection_server.lock:
+        connection_sender.settimeout(3)
         device_id = calculate_device_id(address_sender)
         storage.connections_id[device_id] = address_sender
         storage.connections[address_sender] = connection_sender
         storage.connections[address_sender].send("Recebido".encode('utf-8'))
         storage.devices_commands_description[address_sender] = eval(storage.connections[address_sender].recv(2048).decode('utf-8'))
         storage.connections[address_sender].send(device_id.encode('utf-8'))
+    
+    connection_sender, address_sender = connection_server.tcp_test_connection_server.accept()
+    threading.Thread( target=receive_check_connection_tcp, args=[ connection_sender, address_sender[0]]).start()
+
     print("Nova conexao:", address_sender)
+
+
+def receive_check_connection_tcp( device_connection: object, address_device: str):
+
+    while ( address_device in storage.connections):
+        device_connection.recv(2048)
+        device_connection.send("Recebido".encode('utf-8'))
 
 
 # Receber os dados enviados por udp (parece que funciona) (retirar os prints depois)
@@ -35,8 +48,9 @@ def receive_data_udp():
     while True:
 
         data, address = connection_server.udp_server.recvfrom(2048)
-        with connection_server.lock:
-            storage.data_udp_devices[address[0]] = {'Sinalizador de mudança': True, 'Dados': eval(data.decode('utf-8'))}
+        if (address[0] in storage.connections):
+            with connection_server.lock:
+                storage.data_udp_devices[address[0]] = {'Sinalizador de mudança': True, 'Dados': eval(data.decode('utf-8'))}
 
 
 # Envio de comandos para o dispositivo
@@ -81,12 +95,13 @@ def validate_communication( device_id: str) -> bool:
         storage.connections[device_ip].send(str(request).encode('utf-8'))
         storage.connections[device_ip].recv(2048).decode('utf-8')
 
-    except (ConnectionResetError) as e:
+    except (ConnectionResetError, ConnectionAbortedError, socket.timeout) as e:
         connected = False
             
     if (connected == False):  
         device_ip = storage.connections_id[device_id]
         storage.connections_id.pop(device_id)
+        storage.connections[device_ip].close()
         storage.connections.pop(device_ip)
         storage.devices_commands_description.pop(device_ip)
         if device_ip in storage.data_udp_devices:

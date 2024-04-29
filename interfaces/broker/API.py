@@ -64,4 +64,4 @@ def set_device_data( device_id, command, new_data):
         return jsonify ({'Resposta': 'Dispositivo não encontrado'}), 404
 
 def start():
-    app.run(port=5070,host='0.0.0.0')
+    app.run(port=5080,host='0.0.0.0')
