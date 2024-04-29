@@ -1,5 +1,6 @@
 import requests
 import os
+import re
 
 def main():
     
@@ -79,8 +80,12 @@ def process_option( info: dict):
             server_ip = input("\n  IP do servidor: ").strip()
 
             try:
+                if (not (re.match(r'^(\d{1,3}\.){3}\d{1,3}$', server_ip))):
+                    raise ValueError
+
                 url = (f"http://{server_ip}:5070/")
-                response_code = requests.head(url).status_code
+                print("\n  Aguardando resposta do servidor...")
+                response_code = requests.head(url, timeout=5).status_code
 
                 if ( response_code == 200):
                     info['Menu atual'] = 'Servidor'
@@ -88,8 +93,11 @@ def process_option( info: dict):
                     info['Informação a ser exibida'] = 'Servidor encontrado'
                     return info
 
-            except (requests.exceptions.ConnectTimeout, requests.exceptions.ConnectionError) as e:
+            except (requests.exceptions.ConnectionError) as e:
                 info['Informação a ser exibida'] = 'Conexão impossibilitada'
+                return info
+            except (ValueError) as e:
+                info['Informação a ser exibida'] = 'IP inválido'
                 return info
             
         elif ( info['Opção'] == '2'):
@@ -105,7 +113,7 @@ def process_option( info: dict):
         try:
             if ( info['Opção'] == '1'):
                 url = (f"http://{info['IP servidor']}:5070/devices")
-                devices_ip = requests.get(url).json()
+                devices_ip = requests.get(url, timeout=5).json()
 
                 if (len(devices_ip) == 0):
                     info['Informação a ser exibida'] = 'Nenhum dispositivo está conectado'
@@ -118,8 +126,11 @@ def process_option( info: dict):
             elif ( info['Opção'] == '2'):
                 device_id = input("\n  ID do dispositivo: ").strip()
 
+                if (not(re.match(r'^DE\d+', device_id))):
+                    raise ValueError
+
                 url = (f"http://{info['IP servidor']}:5070/devices")
-                devices_id = requests.get(url).json()
+                devices_id = requests.get(url, timeout=5).json()
 
                 if (device_id in devices_id):
                     info['Menu atual'] = 'Dispositivo'
@@ -140,59 +151,95 @@ def process_option( info: dict):
             else:
                 info['Informação a ser exibida'] = 'Opção inválida'
                 return info
-            
-        except (requests.exceptions.ConnectTimeout, requests.exceptions.ConnectionError) as e:
+
+        except (requests.exceptions.ConnectionError) as e:
             info['Menu atual'] = 'Inicial'
             info['IP servidor'] = ''
             info['Informação a ser exibida'] = 'Conexão encerrada'
             return info
-    
+        except (ValueError) as e:
+            info['Informação a ser exibida'] = 'ID inválido'
+            return info
+
     elif ( info['Menu atual'] == 'Dispositivo'):
         
         try:
             if ( info['Opção'] == '1'):
                 url = (f"http://{info['IP servidor']}:5070/devices/{info['ID dispositivo']}/commands/description")
-                response = requests.get(url).json()
-                amount_commands = len(response)
+                response = requests.get(url, timeout=5)
+                
+                if ( response.status_code == 404):
+                    info['Menu atual'] = 'Servidor'
+                    info['ID dispositivo'] = ''
+                    info['Informação a ser exibida'] = 'Dispositivo desconectado'
+                    return info
+                
+                else:
+                    response = response.json()
+                    amount_commands = len(response)
 
-                url = (f"http://{info['IP servidor']}:5070/devices/{info['ID dispositivo']}/commands/{amount_commands + 1}")
-                response = requests.get(url).json()
+                    url = (f"http://{info['IP servidor']}:5070/devices/{info['ID dispositivo']}/commands/{amount_commands + 1}")
+                    response = requests.get(url, timeout=5).json()
 
-                info['Informação a ser exibida'] =  response['Resposta']
-                return info
+                    info['Informação a ser exibida'] =  response['Resposta']
+                    return info
             
             elif ( info['Opção'] == '2'):
                 url = (f"http://{info['IP servidor']}:5070/devices/{info['ID dispositivo']}/commands/description")
-                response = requests.get(url).json()
-                amount_commands = len(response)
+                response = requests.get(url, timeout=5)
 
-                url = (f"http://{info['IP servidor']}:5070/devices/{info['ID dispositivo']}/commands/{amount_commands + 2}")
-                response = requests.get(url).json()
+                if ( response.status_code == 404):
+                    info['Menu atual'] = 'Servidor'
+                    info['ID dispositivo'] = ''
+                    info['Informação a ser exibida'] = 'Dispositivo desconectado'
+                    return info
+                
+                else:
+                    response = response.json()
+                    amount_commands = len(response)
 
-                info['Informação a ser exibida'] = response['Resposta']
-                return info
+                    url = (f"http://{info['IP servidor']}:5070/devices/{info['ID dispositivo']}/commands/{amount_commands + 2}")
+                    response = requests.get(url, timeout=5).json()
+
+                    info['Informação a ser exibida'] = response['Resposta']
+                    return info
             
             elif ( info['Opção'] == '3'):
-                url = (f"http://{info['IP servidor']}:5070/devices/{info['ID dispositivo']}/commands/description")
-                commands_description = requests.get(url).json()
-
                 command = input("\n  Comando: ").strip()
 
-                if ( commands_description[command]['Método HTTP'] == 'GET'):
-                    url = (f"http://{info['IP servidor']}:5070/devices/{info['ID dispositivo']}/commands/{command}")
-                    response = requests.get(url).json()
+                if (not(re.match(r'^\d+$', command))):
+                    raise ValueError
 
-                elif (commands_description[command]['Método HTTP'] == 'POST'):
-                    url = (f"http://{info['IP servidor']}:5070/devices/{info['ID dispositivo']}/commands/{command}")
-                    response = requests.post(url).json()
+                url = (f"http://{info['IP servidor']}:5070/devices/{info['ID dispositivo']}/commands/description")
+                response = requests.get(url, timeout=5)
 
-                elif ( commands_description[command]['Método HTTP'] == 'PATCH'):
-                    new_data = input(f"  {commands_description[command]['Entrada']}: ").strip()
-                    url = (f"http://{info['IP servidor']}:5070/devices/{info['ID dispositivo']}/commands/{command}/{new_data}")
-                    response = requests.patch(url).json()
+                if ( response.status_code == 404):
+                    info['Menu atual'] = 'Servidor'
+                    info['ID dispositivo'] = ''
+                    info['Informação a ser exibida'] = 'Dispositivo desconectado'
+                    return info
+                
+                else:
+                    commands_description = response.json()
 
-                info['Informação a ser exibida'] = response['Resposta']
-                return info
+                    if ( command not in commands_description.keys()):
+                        raise ValueError
+
+                    elif ( commands_description[command]['Método HTTP'] == 'GET'):
+                        url = (f"http://{info['IP servidor']}:5070/devices/{info['ID dispositivo']}/commands/{command}")
+                        response = requests.get(url, timeout=5).json()
+
+                    elif (commands_description[command]['Método HTTP'] == 'POST'):
+                        url = (f"http://{info['IP servidor']}:5070/devices/{info['ID dispositivo']}/commands/{command}")
+                        response = requests.post(url, timeout=5).json()
+
+                    elif ( commands_description[command]['Método HTTP'] == 'PATCH'):
+                        new_data = input(f"  {commands_description[command]['Entrada']}: ").strip()
+                        url = (f"http://{info['IP servidor']}:5070/devices/{info['ID dispositivo']}/commands/{command}/{new_data}")
+                        response = requests.patch(url, timeout=5).json()
+
+                    info['Informação a ser exibida'] = response['Resposta']
+                    return info
             
             elif ( info['Opção'] == '4'):
                 info['Menu atual'] = 'Servidor'
@@ -204,13 +251,16 @@ def process_option( info: dict):
                 info['Informação a ser exibida'] = 'Opção inválida'
                 return info
 
-        except (requests.exceptions.ConnectTimeout, requests.exceptions.ConnectionError) as e:
+        except (requests.exceptions.ConnectionError) as e:
             info['Menu atual'] = 'Inicial'
             info['IP servidor'] = ''
             info['ID dispositivo'] = ''
             info['Informação a ser exibida'] = 'Conexão encerrada'
             return info
-
+        except (ValueError) as e:
+            info['Informação a ser exibida'] = 'Comando inválido'
+            return info
+        
 def clear_terminal():
     
     if os.name == 'nt':  # Windows
