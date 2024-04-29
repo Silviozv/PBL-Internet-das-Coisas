@@ -1,5 +1,7 @@
 FROM python:3.12-slim
 WORKDIR /dispositivo
+EXPOSE 5050/tcp
+EXPOSE 5060/udp
 COPY . .
 CMD ["python", "sensor.py"]
 
