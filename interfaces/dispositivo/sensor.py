@@ -1,5 +1,6 @@
 import threading  
 import os
+import time
 from classe import Sensor, Connection_device
 
 sensor = Sensor()
@@ -104,18 +105,21 @@ def server_request_tcp():
 # Enviar os dados via UDP (parece que ta funcionando)
 def send_data_udp():    
 
+    begin = time.time()
     while True:
             
         if (connection.server_ip != "" and sensor.temperature != "-----"):
             
-            if (sensor.status == 'ligado'):
-                data = sensor.get_returning_data()
-                data['Válido'] = True
-            elif (sensor.status == 'desligado'):
-                data = {}
-                data['Válido'] = False
-                data['Justificativa'] = 'Dispositivo desligado, não é possível coletar os dados'
-            connection.udp_device.sendto( str(data).encode('utf-8'), (connection.server_ip, connection.udp_port))
+            if ( (time.time() - begin) >= 0.5):
+                if (sensor.status == 'ligado'):
+                    data = sensor.get_returning_data()
+                    data['Válido'] = True
+                elif (sensor.status == 'desligado'):
+                    data = {}
+                    data['Válido'] = False
+                    data['Justificativa'] = 'Dispositivo desligado, não é possível coletar os dados'
+                connection.udp_device.sendto( str(data).encode('utf-8'), (connection.server_ip, connection.udp_port))
+                begin = time.time()
 
 def show_scream( show_msg):
 
