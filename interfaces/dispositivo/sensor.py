@@ -18,9 +18,11 @@ def menu():
 
         # Respostas para os casos em desenvolvimento
         if (option == '1'):
+            connection.check_connection_tcp()
             show_msg = connection.start_connection(sensor.get_commands_description())
 
         elif (option == '2'):
+            connection.check_connection_tcp()
             show_msg = connection.end_connection()
 
         elif (option == '3'):
@@ -30,6 +32,7 @@ def menu():
             show_msg = sensor.turn_off()
             
         elif (option == '5'):
+            connection.check_connection_tcp()
             show_msg = sensor.get_query_data(connection.server_connected, connection.device_id)
          
         elif (option == '6'):

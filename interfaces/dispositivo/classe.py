@@ -186,8 +186,12 @@ class Connection_device:
 
         self.device_id = "-----"
 
-        self.tcp_port = 5050
-        self.udp_port = 5060
+        self.tcp_test_connection_port = 5050
+        self.tcp_port = 5060
+        self.udp_port = 5070
+
+        self.tcp_test_connection_device = socket.socket( socket.AF_INET, socket.SOCK_STREAM)
+        self.tcp_test_connection_device.settimeout(3)
 
         self.tcp_device = socket.socket( socket.AF_INET, socket.SOCK_STREAM)
         self.udp_device = socket.socket( socket.AF_INET, socket.SOCK_DGRAM)
@@ -205,6 +209,8 @@ class Connection_device:
                 self.device_id = self.tcp_device.recv(2048).decode('utf-8')
                 self.tcp_device.send(str(commands_description).encode('utf-8'))
                 self.device_id = self.tcp_device.recv(2048).decode('utf-8')
+
+                self.tcp_test_connection_device.connect( (server_ip, self.tcp_test_connection_port))
 
                 with self.lock:
                     self.server_ip = server_ip
@@ -237,3 +243,14 @@ class Connection_device:
     def restart_tcp_obj(self):
 
         self.tcp_device = socket.socket( socket.AF_INET, socket.SOCK_STREAM)
+
+    def check_connection_tcp(self):
+
+        if (self.server_connected == True):
+
+            try:
+                self.tcp_test_connection_device.send('Mensagem de checagem'.encode('utf-8'))
+                self.tcp_test_connection_device.recv(2048)
+
+            except (ConnectionResetError, ConnectionAbortedError, socket.timeout) as e:
+                self.end_connection()
