@@ -199,7 +199,7 @@ class Connection_device:
     def start_connection(self, commands_description: dict) -> str:
 
         if (self.server_connected == False):
-            server_ip = input("\n  IP servidor: ")
+            server_ip = input("\n  IP servidor: ").strip()
             try:
                 self.tcp_device.connect( (server_ip, self.tcp_port))
                 self.device_id = self.tcp_device.recv(2048).decode('utf-8')

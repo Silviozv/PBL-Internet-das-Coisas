@@ -20,12 +20,12 @@ def receive_connection_tcp():
 
 def storage_connection_tcp( connection_sender: object, address_sender: str):
     with connection_server.lock:
-        device_id = calculate_device_id(address_sender[0])
-        storage.connections_id[device_id] = address_sender[0]
-        storage.connections[address_sender[0]] = connection_sender
-        storage.connections[address_sender[0]].send("Recebido".encode('utf-8'))
-        storage.devices_commands_description[address_sender[0]] = eval(storage.connections[address_sender[0]].recv(2048).decode('utf-8'))
-        storage.connections[address_sender[0]].send(device_id.encode('utf-8'))
+        device_id = calculate_device_id(address_sender)
+        storage.connections_id[device_id] = address_sender
+        storage.connections[address_sender] = connection_sender
+        storage.connections[address_sender].send("Recebido".encode('utf-8'))
+        storage.devices_commands_description[address_sender] = eval(storage.connections[address_sender].recv(2048).decode('utf-8'))
+        storage.connections[address_sender].send(device_id.encode('utf-8'))
     print("Nova conexao:", address_sender)
 
 
@@ -66,7 +66,6 @@ def send_command(device_id: str, request: dict):
 
         storage.connections[device_ip].send(str(request).encode('utf-8'))
         response = eval(storage.connections[device_ip].recv(2048).decode('utf-8'))
-        print(6)
 
     return response
 
@@ -108,7 +107,7 @@ def get_device_commands_description( device_id: str):
 
 
 def get_data_udp( device_ip: str) -> dict:
-    
+
     if ( device_ip in storage.data_udp_devices):
 
         data = storage.data_udp_devices[device_ip]['Dados']
@@ -121,7 +120,6 @@ def get_data_udp( device_ip: str) -> dict:
                 data = {}
             
     else:
-
         data = {}
             
     return data
