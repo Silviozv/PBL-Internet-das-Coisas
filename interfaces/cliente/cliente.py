@@ -93,7 +93,7 @@ def process_option( info: dict):
                     info['Informação a ser exibida'] = 'Servidor encontrado'
                     return info
 
-            except (requests.exceptions.ConnectionError) as e:
+            except (requests.exceptions.ConnectionError, requests.exceptions.ReadTimeout) as e:
                 info['Informação a ser exibida'] = 'Conexão impossibilitada'
                 return info
             except (ValueError) as e:
@@ -154,7 +154,7 @@ def process_option( info: dict):
                 info['Informação a ser exibida'] = 'Opção inválida'
                 return info
 
-        except (requests.exceptions.ConnectionError) as e:
+        except (requests.exceptions.ConnectionError, requests.exceptions.ReadTimeout) as e:
             info['Menu atual'] = 'Inicial'
             info['IP servidor'] = ''
             info['Informação a ser exibida'] = 'Conexão encerrada'
@@ -256,7 +256,7 @@ def process_option( info: dict):
                 info['Informação a ser exibida'] = 'Opção inválida'
                 return info
 
-        except (requests.exceptions.ConnectionError) as e:
+        except (requests.exceptions.ConnectionError, requests.exceptions.ReadTimeout) as e:
             info['Menu atual'] = 'Inicial'
             info['IP servidor'] = ''
             info['ID dispositivo'] = ''
