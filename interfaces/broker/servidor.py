@@ -16,32 +16,31 @@ def receive_connection_tcp():
     while True:
 
         connection_sender, address_sender = connection_server.tcp_server.accept()
-        threading.Thread( target=storage_connection_tcp, args=[ connection_sender, address_sender[0]]).start()
+        threading.Thread( target=dealing_connection_tcp, args=[ connection_sender, address_sender[0]]).start()
 
+def dealing_connection_tcp( connection_sender: object, address_sender: str):
 
-def storage_connection_tcp( connection_sender: object, address_sender: str):
-    with connection_server.lock:
-        connection_sender.settimeout(3)
-        device_id = calculate_device_id(address_sender)
-        storage.connections_id[device_id] = address_sender
-        storage.connections[address_sender] = connection_sender
-        storage.connections[address_sender].send("Recebido".encode('utf-8'))
-        storage.devices_commands_description[address_sender] = eval(storage.connections[address_sender].recv(2048).decode('utf-8'))
-        storage.connections[address_sender].send(device_id.encode('utf-8'))
+    response = connection_sender.recv(2048).decode('utf-8')
+
+    if (response == "Checagem"):
+
+        if (address_sender in storage.connections):
+            connection_sender.send("Conectado".encode('utf-8'))
+        else:
+            connection_sender.send("Desconectado".encode('utf-8'))
+
+    elif (response == "Conexão"):
+
+        with connection_server.lock:
+            connection_sender.settimeout(3)
+            device_id = calculate_device_id(address_sender)
+            storage.connections_id[device_id] = address_sender
+            storage.connections[address_sender] = connection_sender
+            storage.devices_commands_description[address_sender] = eval(storage.connections[address_sender].recv(2048).decode('utf-8'))
+            storage.connections[address_sender].send(device_id.encode('utf-8'))
+
+        print("Nova conexao:", address_sender)
     
-    connection_sender, address_sender = connection_server.tcp_test_connection_server.accept()
-    threading.Thread( target=receive_check_connection_tcp, args=[ connection_sender, address_sender[0]]).start()
-
-    print("Nova conexao:", address_sender)
-
-
-def receive_check_connection_tcp( device_connection: object, address_device: str):
-
-    while ( address_device in storage.connections):
-        device_connection.recv(2048)
-        device_connection.send("Recebido".encode('utf-8'))
-
-
 # Receber os dados enviados por udp (parece que funciona) (retirar os prints depois)
 def receive_data_udp():
 
