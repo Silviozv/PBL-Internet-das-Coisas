@@ -186,12 +186,8 @@ class Connection_device:
 
         self.device_id = "-----"
 
-        self.tcp_test_connection_port = 5050
-        self.tcp_port = 5060
-        self.udp_port = 5070
-
-        self.tcp_test_connection_device = socket.socket( socket.AF_INET, socket.SOCK_STREAM)
-        self.tcp_test_connection_device.settimeout(3)
+        self.tcp_port = 5050
+        self.udp_port = 5060
 
         self.tcp_device = socket.socket( socket.AF_INET, socket.SOCK_STREAM)
         self.udp_device = socket.socket( socket.AF_INET, socket.SOCK_DGRAM)
@@ -205,12 +201,12 @@ class Connection_device:
         if (self.server_connected == False):
             server_ip = input("\n  IP servidor: ").strip()
             try:
+                self.tcp_device.settimeout(5)
                 self.tcp_device.connect( (server_ip, self.tcp_port))
-                self.device_id = self.tcp_device.recv(2048).decode('utf-8')
+                self.tcp_device.send("Conexão".encode('utf-8'))
                 self.tcp_device.send(str(commands_description).encode('utf-8'))
                 self.device_id = self.tcp_device.recv(2048).decode('utf-8')
-
-                self.tcp_test_connection_device.connect( (server_ip, self.tcp_test_connection_port))
+                self.tcp_device.settimeout(None)
 
                 with self.lock:
                     self.server_ip = server_ip
@@ -218,7 +214,7 @@ class Connection_device:
 
                 return "Conexão estabelecida"
                     
-            except (ConnectionRefusedError, socket.gaierror, OSError) as e:
+            except (ConnectionRefusedError, socket.gaierror, socket.timeout, OSError) as e:
                 return "Conexão impossibilitada"
 
         else:
@@ -244,13 +240,17 @@ class Connection_device:
 
         self.tcp_device = socket.socket( socket.AF_INET, socket.SOCK_STREAM)
 
-    def check_connection_tcp(self):
+    def check_connection(self):
 
         if (self.server_connected == True):
 
             try:
-                self.tcp_test_connection_device.send('Mensagem de checagem'.encode('utf-8'))
-                self.tcp_test_connection_device.recv(2048)
-
-            except (ConnectionResetError, ConnectionAbortedError, socket.timeout) as e:
+                tcp_device_check = socket.socket( socket.AF_INET, socket.SOCK_STREAM)
+                tcp_device_check.settimeout(5)
+                tcp_device_check.connect( (self.server_ip, self.tcp_port))
+                tcp_device_check.send("Checagem".encode('utf-8'))
+                response = tcp_device_check.recv(2048).decode('utf-8')
+                if (response == "Desconectado"):
+                    self.end_connection()
+            except (ConnectionRefusedError, socket.gaierror, socket.timeout, OSError) as e:
                 self.end_connection()

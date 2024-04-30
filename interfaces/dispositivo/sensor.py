@@ -1,4 +1,5 @@
 import threading  
+import socket
 import os
 import time
 from classe import Sensor, Connection_device
@@ -18,11 +19,11 @@ def menu():
 
         # Respostas para os casos em desenvolvimento
         if (option == '1'):
-            connection.check_connection_tcp()
+            connection.check_connection()
             show_msg = connection.start_connection(sensor.get_commands_description())
 
         elif (option == '2'):
-            connection.check_connection_tcp()
+            connection.check_connection()
             show_msg = connection.end_connection()
 
         elif (option == '3'):
@@ -32,7 +33,7 @@ def menu():
             show_msg = sensor.turn_off()
             
         elif (option == '5'):
-            connection.check_connection_tcp()
+            connection.check_connection()
             show_msg = sensor.get_query_data(connection.server_connected, connection.device_id)
          
         elif (option == '6'):
@@ -105,7 +106,7 @@ def server_request_tcp():
                 response = {'Resposta': 'Comando inválido'}
                 connection.tcp_device.send(str(response).encode('utf-8'))
 
-            except (ConnectionAbortedError, OSError) as e:   # Quando o dispositivo cancela a comunicação
+            except (ConnectionAbortedError, OSError, socket.timeout) as e:   # Quando o dispositivo cancela a comunicação
                 connection.end_connection()
 
             except (ConnectionResetError) as e:     # Quando o servidor é encerrado
