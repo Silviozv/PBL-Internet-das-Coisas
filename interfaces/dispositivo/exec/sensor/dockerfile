@@ -1,5 +1,5 @@
 FROM python:3.12-slim
-WORKDIR /dispositivo
+WORKDIR /sensor
 EXPOSE 5050/tcp
 EXPOSE 5060/udp
 COPY . .

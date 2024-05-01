@@ -1,12 +1,9 @@
+import socket
 import os
-import threading  
-from classe import Radio, Connection_device
 
-radio = Radio()
-connection = Connection_device()
 
 # Menu de opções diretas para o dispositivo (parece que as opções funcionam bem, incluindo a conexão e desconexão)
-def menu():
+def menu( radio, connection):
 
     show_msg = 'Sistema iniciado'
 
@@ -50,7 +47,7 @@ def menu():
         clear_terminal()
 
 # Receber requisições do servidor (O primeiro comando funciona)
-def server_request_tcp():
+def server_request_tcp( radio, connection):
 
     while True:
 
@@ -126,7 +123,7 @@ def server_request_tcp():
                 response = {'Resposta': 'Comando inválido'}
                 connection.tcp_device.send(str(response).encode('utf-8'))
 
-            except (ConnectionAbortedError, OSError) as e:   # Quando o dispostivo cancela a comunicação
+            except (ConnectionAbortedError, OSError, socket.timeout) as e:   # Quando o dispostivo cancela a comunicação
                 connection.end_connection()
 
             except (ConnectionResetError) as e:     # Quando o servidor é encerrado
@@ -184,12 +181,3 @@ def clear_terminal():
         os.system('cls')
     else:  # Outros sistemas (Linux, macOS)
         os.system('clear')
-
-def iniciar():
-
-    # A lógica de receber comandos e poder executar opções do menu parecem funcionar
-    threading.Thread(target=server_request_tcp).start()
-    menu()
-
-if __name__=="__main__":
-    iniciar()

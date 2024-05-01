@@ -1,7 +1,9 @@
 import threading
 import time
 import socket
-from classe import Storage, Connection_server
+
+from model.Storage import Storage
+from model.Connection_server import Connection_server
 
 storage = Storage()
 connection_server = Connection_server()

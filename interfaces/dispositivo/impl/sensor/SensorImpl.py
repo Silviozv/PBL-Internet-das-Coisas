@@ -1,14 +1,9 @@
-import threading  
 import socket
 import os
 import time
-from classe import Sensor, Connection_device
-
-sensor = Sensor()
-connection = Connection_device()
 
 # Menu de opções diretas para o dispositivo (parece que as opções funcionam bem, incluindo a conexão e desconexão)
-def menu():
+def menu( sensor, connection):
 
     show_msg = 'Sistema iniciado'
 
@@ -45,7 +40,7 @@ def menu():
         clear_terminal()
 
 # Receber requisições do servidor (O primeiro comando funciona)
-def server_request_tcp():
+def server_request_tcp( sensor, connection):
 
     while True:
 
@@ -113,7 +108,7 @@ def server_request_tcp():
                 connection.end_connection()
 
 # Enviar os dados via UDP (parece que ta funcionando)
-def send_data_udp():    
+def send_data_udp( sensor, connection):    
 
     begin = time.time()
     while True:
@@ -173,13 +168,4 @@ def clear_terminal():
         os.system('cls')
     else:  # Outros sistemas (Linux, macOS)
         os.system('clear')
-
-def iniciar():
-
-    # A lógica de receber comandos e poder executar opções do menu parecem funcionar
-    threading.Thread(target=server_request_tcp).start()
-    threading.Thread(target=send_data_udp).start()
-    menu()
-
-if __name__=="__main__":
-    iniciar()
+    

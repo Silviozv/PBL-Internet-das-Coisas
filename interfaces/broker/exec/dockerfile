@@ -1,5 +1,5 @@
 FROM python:3.12-slim
-WORKDIR /broker
+WORKDIR /exec
 RUN pip install Flask jsonify
 COPY . .
 CMD ["python", "__main__.py"]

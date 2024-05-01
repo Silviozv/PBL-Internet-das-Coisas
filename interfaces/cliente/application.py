@@ -215,7 +215,6 @@ def process_option( info: dict):
                     raise ValueError
 
                 url = (f"http://{info['IP servidor']}:5070/devices/{info['ID dispositivo']}/commands/description")
-                print("\n  Aguardando resposta do servidor...")
                 response = requests.get(url, timeout=5)
 
                 if ( response.status_code == 404):
@@ -232,14 +231,17 @@ def process_option( info: dict):
 
                     elif ( commands_description[command]['Método HTTP'] == 'GET'):
                         url = (f"http://{info['IP servidor']}:5070/devices/{info['ID dispositivo']}/commands/{command}")
+                        print("\n  Aguardando resposta do servidor...")
                         response = requests.get(url, timeout=5).json()
 
                     elif (commands_description[command]['Método HTTP'] == 'POST'):
                         url = (f"http://{info['IP servidor']}:5070/devices/{info['ID dispositivo']}/commands/{command}")
+                        print("\n  Aguardando resposta do servidor...")
                         response = requests.post(url, timeout=5).json()
 
                     elif ( commands_description[command]['Método HTTP'] == 'PATCH'):
                         new_data = input(f"  {commands_description[command]['Entrada']}: ").strip()
+                        print("\n  Aguardando resposta do servidor...")
                         url = (f"http://{info['IP servidor']}:5070/devices/{info['ID dispositivo']}/commands/{command}/{new_data}")
                         response = requests.patch(url, timeout=5).json()
 
