@@ -10,7 +10,8 @@ class Sensor:
 
     def __init__(self):
         """
-        Inicialização dos atributos base do sensor de temperatura.
+        Inicialização dos atributos base do sensor de temperatura. Incluindo: a descrição, o status, os 
+        dados da temperatura, os comandos disponíveis para o usuário e as suas descrições.
         """
 
         self.local_ip = socket.gethostbyname( socket.gethostname())

@@ -1,9 +1,19 @@
+"""Módulo contendo a classe que representa a conexão de um dispositivo."""
+
 import socket
 import threading
 
+
 class Connection_device:
+    """ Classe que representa a conexão de um dispositivo. """
+
 
     def __init__(self):
+        """
+        Inicialização dos atributos base da conexão do dispositivo. Incluindo: o ID, as portas de 
+        conexão para cada tido de conexão, os objetos socket da conexão, dados relacionados ao 
+        servidor.
+        """
 
         self.device_id = "-----"
 
@@ -17,9 +27,21 @@ class Connection_device:
         self.server_connected = False
         self.lock = threading.Lock()
 
-    def start_connection(self, commands_description: dict) -> str:
 
-        if (self.server_connected == False):
+    def start_connection(self, commands_description: dict) -> str:
+        """
+        Pede o IP do servidor para fazer o processo de iniciar a conexão, caso não tenha nenhum servidor 
+        conectado. Depois de mandar o sinal indicando que uma conexão está tentando ser iniciada, são 
+        enviadas as descrições dos comandos para serem armazenadas no servidor, em seguida, é recebido o 
+        ID calculado pelo servidor. Os atributos da armazenamento dos dados do servidor são modificados.
+
+        :param commands_description: Descrição dos comandos disponíveis ao usuário.
+        :type commands_description: dict
+        :return: Resultado da tentativa de início da conexão com o servidor.
+        :rtype: str
+        """
+
+        if self.server_connected == False:
             server_ip = input("\n  IP servidor: ").strip()
             try:
                 self.tcp_device.settimeout(5)
@@ -41,9 +63,17 @@ class Connection_device:
         else:
             return "Conexão já estabelecida"
 
-    def end_connection(self) -> str:
 
-        if (self.server_connected == True):
+    def end_connection(self) -> str:
+        """
+        Encerra a conexão com o servidor atual, caso tenha algum conectado. Os objetos da conexão são 
+        tratados para encerrar a conexão e os atributos de dados do servidor são atualizados.
+
+        :return: Resultado da tentativa de encerrar a conexão com o servidor.
+        :rtype: str
+        """
+
+        if self.server_connected == True:
 
             with self.lock:
                 self.server_connected = False
@@ -57,13 +87,24 @@ class Connection_device:
         else:
             return "Não há um servidor conectado"
 
+
     def restart_tcp_obj(self):
+        """
+        Reseta o objeto da comunicação que segue o protocolo TCP.
+        """
 
         self.tcp_device = socket.socket( socket.AF_INET, socket.SOCK_STREAM)
 
-    def check_connection(self):
 
-        if (self.server_connected == True):
+    def check_connection(self):
+        """
+        Checa se o servidor ainda está conectado ao dispositivo, ou se a conexão foi descartada. É 
+        feito um novo objeto de conexão TCP para iniciar uma nova comunicação de checagem. Se for 
+        retornado que o servidor não está conectado ao dispositivo, os dados da comunicação principal  
+        são encerrados.
+        """
+
+        if self.server_connected == True:
 
             try:
                 tcp_device_check = socket.socket( socket.AF_INET, socket.SOCK_STREAM)
@@ -71,7 +112,7 @@ class Connection_device:
                 tcp_device_check.connect( (self.server_ip, self.tcp_port))
                 tcp_device_check.send("Checagem".encode('utf-8'))
                 response = tcp_device_check.recv(2048).decode('utf-8')
-                if (response == "Desconectado"):
+                if response == "Desconectado":
                     self.end_connection()
             except (ConnectionRefusedError, socket.gaierror, socket.timeout, OSError) as e:
                 self.end_connection()

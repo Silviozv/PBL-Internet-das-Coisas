@@ -10,10 +10,10 @@ class Radio:
 
     def __init__(self):
         """
-        Inicialização dos atributos base do radio.
+        Inicialização dos atributos base do radio. Incluindo: a descrição, o status, os dados da 
+        música atual, os comandos disponíveis para o usuário e as suas descrições.
         """
 
-        self.local_ip = socket.gethostbyname( socket.gethostname())
         self.description = 'Aparelho de som via internet'
         self.status = 'desligado'
         self.music = '-----'
@@ -122,21 +122,21 @@ class Radio:
         :rtype: str
         """
 
-        if (self.music_status == '-------'): 
+        if self.music_status == '-------': 
             return "Nenhuma música foi selecionada"
 
         else:
-            if (self.status == 'ligado'):
+            if self.status == 'ligado':
 
-                if (self.music_status == 'Tocando'):
+                if self.music_status == 'Tocando':
                     return "A música já está tocando"
                 
-                elif (self.music_status == 'Pausada'):
+                elif self.music_status == 'Pausada':
                     with threading.Lock():
                         self.music_status = 'Tocando'
                     return "A música foi colocada para tocar"
                 
-            elif (self.status == 'desligado'):
+            elif self.status == 'desligado':
                 return "Aparelho desligado, não tem como modificar status da música"
             
             
@@ -150,21 +150,21 @@ class Radio:
         :rtype: str
         """
 
-        if (self.music_status == '-------'): 
+        if self.music_status == '-------': 
             return "Nenhuma música foi selecionada"
 
         else:
-            if (self.status == 'ligado'):
+            if self.status == 'ligado':
 
-                if (self.music_status == 'Tocando'):
+                if self.music_status == 'Tocando':
                     with threading.Lock():
                         self.music_status = 'Pausada'
                     return "A música foi pausada"
                 
-                elif (self.music_status == 'Pausada'):
+                elif self.music_status == 'Pausada':
                     return "A música já está pausada"
                 
-            elif (self.status == 'desligado'):
+            elif self.status == 'desligado':
                 return "Aparelho desligado, não tem como modificar status da música"   
 
 
@@ -180,7 +180,7 @@ class Radio:
         if self.status == 'desligado':
             with threading.Lock():
                 self.status = 'ligado'
-                if ( self.music != '-----'):
+                if self.music != '-----':
                     self.music_status = 'Tocando'
 
             return "Dispositivo ligado"
@@ -198,10 +198,10 @@ class Radio:
         :rtype: str
         """
 
-        if (self.status == 'ligado'):
+        if self.status == 'ligado':
             with threading.Lock():
                 self.status = 'desligado'
-                if ( self.music != '-----'):
+                if self.music != '-----':
                     self.music_status = 'Pausada'
 
             return "Dispositivo desligado"
