@@ -1,8 +1,22 @@
+""" 
+Módulo contendo as funções de implementação da aplicação. Incluindo: 
+a exibição do menu de opções, dependendo do estado atual da aplicação; 
+e a lógica de pedidos para a API, dependendo da requisição do usuário.
+"""
+
 import requests
 import os
 import re
 
+
 def main():
+    """
+    'Loop' de exibição da tela de menu, mensagens de resposta e 
+    pedido de requisição para o usuário. Inicializa as seguintes 
+    informações: estado atual do menu do usuário; IP do servidor; 
+    informação a ser exibida abaixo das opções de requisição; e a 
+    opção atual.
+    """
     
     info = {}
     info['Menu atual'] = 'Inicial'
@@ -22,7 +36,16 @@ def main():
 
     return 0 
 
+
 def show_screen( info: dict):
+    """
+    Exibe as informações de menu para o usuário. Abaixo das opções 
+    de requisição, são exibidas informações de resposta.
+
+    :param info: Armazena todas as informações necessários para a lógica 
+    do menu para o usuário.
+    :type info: dict
+    """
 
     print("\n+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-+")
     print("|                        GERENCIAMENTO DE DISPOSITIVOS                        |")
@@ -72,7 +95,29 @@ def show_screen( info: dict):
         print("|" + " " * 77 + "|")
         print("+-----------------------------------------------------------------------------+")
 
-def process_option( info: dict):
+
+def process_option( info: dict) -> dict:
+    """
+    Processa a opção que o usuário indicou no menu. Dependendo do estado 
+    atual do menu, o processamento é feita de forma diferente. 
+    A seguir, os estados do menu:
+
+    - Inicial: Menu inicial. Possui apenas as opções de encerrar a 
+      aplicação ou setar o IP do servidor desejado;
+    - Servidor: Menu de requisições gerais para o Servidor Broker. 
+      Podendo requisitar os IPs dos dispositivos conectados ou 
+      selecionar um dispositivo para fazer requisições;
+    - Dispositivo: Menu de requisições para um dispositivo específico. 
+      Pode ser pedida a descrição geral do dispositivo, os comandos 
+      disponíveis ao usuário, ou o envio de um comando específico.
+
+    :param info: Armazena todas as informações necessários para a lógica 
+    do menu para o usuário.
+    :type info: dict
+    :return: Informações necessários para a lógica do menu, incluindo a 
+    mensagem de resposta em relação a requisição do usuário.
+    :rtype: dict
+    """
 
     if ( info['Menu atual'] == 'Inicial'):
 
@@ -268,13 +313,13 @@ def process_option( info: dict):
             info['Informação a ser exibida'] = 'Comando inválido'
             return info
         
+        
 def clear_terminal():
-    
-    if os.name == 'nt':  # Windows
+    """
+    Limpa os dados da tela de exibição do usuário, adaptando-se ao sistema operacional atual. 
+    """
+
+    if os.name == 'nt':  
         os.system('cls')
-    else:  # Outros sistemas (Linux, macOS)
+    else: 
         os.system('clear')
-
-if __name__ == "__main__":
-
-    main()
