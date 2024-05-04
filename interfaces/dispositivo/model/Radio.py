@@ -23,7 +23,7 @@ class Radio:
         self.commands_description = {'1': {'Entrada': '', 'Método HTTP': 'POST', 'Coleta de dados UDP': False}, '2': {'Entrada': '', 'Método HTTP': 'POST', 'Coleta de dados UDP': False}, '3': {'Entrada': 'Música', 'Método HTTP': 'PATCH', 'Coleta de dados UDP': False}, '4': {'Entrada': '', 'Método HTTP': 'POST', 'Coleta de dados UDP': False}, '5': {'Entrada': '', 'Método HTTP': 'POST', 'Coleta de dados UDP': False}}
 
 
-    def get_query_data(self, server_connected: bool, id: str) -> str:
+    def get_query_data(self, server_status: str, id: str) -> str:
         """
         Retorna os dados que devem ser exibidos na opção de "Consultar dados" do dispositivo.
 
@@ -37,11 +37,7 @@ class Radio:
 
         status = self.status.capitalize()
         music = self.music.upper()
-        if server_connected == False:
-            status_server = 'Desconectado'
-        elif server_connected == True:
-            status_server = 'Conectado'
-        response = {'ID': id,'Status': status, 'Música atual': music, 'Status da música': self.music_status, 'Servidor': status_server}
+        response = {'ID': id,'Status': status, 'Música atual': music, 'Status da música': self.music_status, 'Servidor': server_status}
         return response
     
 

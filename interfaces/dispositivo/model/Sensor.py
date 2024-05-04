@@ -23,7 +23,7 @@ class Sensor:
         self.commands_description = {'1': {'Entrada': '', 'Método HTTP': 'POST', 'Coleta de dados UDP': False}, '2': {'Entrada': '', 'Método HTTP': 'POST', 'Coleta de dados UDP': False}, '3': {'Entrada': '', 'Método HTTP': 'GET', 'Coleta de dados UDP': True}}
 
 
-    def get_query_data(self, server_connected: bool, id: str) -> dict:
+    def get_query_data(self, server_status: str, id: str) -> dict:
         """
         Retorna os dados que devem ser exibidos na opção de "Consultar dados" do dispositivo.
 
@@ -36,11 +36,7 @@ class Sensor:
         """
 
         status = self.status.capitalize()
-        if server_connected == False:
-            status_server = 'Desconectado'
-        elif server_connected == True:
-            status_server = 'Conectado'
-        response = {'ID': id,'Status': status, 'Temperatura': self.temperature, 'Servidor': status_server}
+        response = {'ID': id,'Status': status, 'Temperatura': self.temperature, 'Servidor': server_status}
         return response
 
 

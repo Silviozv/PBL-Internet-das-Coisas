@@ -1,5 +1,6 @@
 import socket
 import os
+import threading
 
 
 # Menu de opções diretas para o dispositivo (parece que as opções funcionam bem, incluindo a conexão e desconexão)
@@ -14,11 +15,9 @@ def menu( radio, connection):
 
         # Respostas para os casos em desenvolvimento
         if (option == '1'):
-            connection.check_connection()
             show_msg = connection.start_connection(radio.get_commands_description())
 
         elif (option == '2'):
-            connection.check_connection()
             show_msg = connection.end_connection()
 
         elif (option == '3'):
@@ -28,8 +27,7 @@ def menu( radio, connection):
             show_msg = radio.turn_off()
             
         elif (option == '5'):
-            connection.check_connection()
-            show_msg = radio.get_query_data(connection.server_connected, connection.device_id)
+            show_msg = radio.get_query_data(connection.server_status, connection.device_id)
          
         elif (option == '6'):
             music = input("\n  Música: ")
@@ -55,7 +53,7 @@ def server_request_tcp( radio, connection):
         # Comando 2: get descrição geral
         # Comando 3: get comandos disponíveis
 
-        if (connection.server_connected == True):
+        if (connection.server_status == 'Conectado'):
 
             try:
 
@@ -123,11 +121,10 @@ def server_request_tcp( radio, connection):
                 response = {'Resposta': 'Comando inválido'}
                 connection.tcp_device.send(str(response).encode('utf-8'))
 
-            except (ConnectionAbortedError, OSError, socket.timeout) as e:   # Quando o dispostivo cancela a comunicação
-                connection.end_connection()
-
-            except (ConnectionResetError) as e:     # Quando o servidor é encerrado
-                connection.end_connection()
+            except (ConnectionAbortedError, ConnectionResetError, OSError, socket.timeout) as e:   # Quando o dispositivo cancela a comunicação
+                if connection.server_ip != "":
+                    connection.server_status = 'Reconectando'
+                    threading.Thread(target=connection.loop_reconnection, args=[ radio.get_available_commands()]).start()
 
 def show_scream( show_msg):
 

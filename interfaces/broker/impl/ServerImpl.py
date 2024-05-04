@@ -34,15 +34,59 @@ def dealing_connection_tcp( connection_sender: object, address_sender: str):
     elif (response == "Conexão"):
 
         with connection_server.lock:
-            connection_sender.settimeout(3)
+            connection_sender.settimeout(6)
             device_id = calculate_device_id(address_sender)
             storage.connections_id[device_id] = address_sender
             storage.connections[address_sender] = connection_sender
             storage.devices_commands_description[address_sender] = eval(storage.connections[address_sender].recv(2048).decode('utf-8'))
             storage.connections[address_sender].send(device_id.encode('utf-8'))
+            storage.flags_devices[address_sender] = 0
 
         print("Nova conexao:", address_sender)
+        time.sleep(2)
+        threading.Thread( target=loop_validate_communication, args=[ device_id]).start()
     
+
+def loop_validate_communication( device_id: str):
+
+    device_ip  = storage.connections_id[device_id]
+
+    while (device_ip in storage.connections):
+            
+        while storage.flags_devices[device_ip] == 1:
+            pass
+
+        with connection_server.lock:
+            storage.flags_devices[device_ip] = 1
+
+        try:
+            
+            device_ip = storage.connections_id[device_id]
+
+            request = {'Comando': '0'}
+            print(request)
+            print(storage.connections[device_ip])
+            storage.connections[device_ip].send(str(request).encode('utf-8'))
+            storage.connections[device_ip].recv(2048).decode('utf-8')
+
+        except (ConnectionResetError, ConnectionAbortedError, socket.timeout, BrokenPipeError) as e:
+            print(e)
+            device_ip = storage.connections_id[device_id]
+            storage.connections_id.pop(device_id)
+            storage.connections[device_ip].close()
+            storage.connections.pop(device_ip)
+            storage.devices_commands_description.pop(device_ip)
+            storage.flags_devices.pop(device_ip)
+            if device_ip in storage.data_udp_devices:
+                storage.data_udp_devices.pop(device_ip)
+
+        with connection_server.lock:     
+            storage.flags_devices[device_ip] = 0
+
+        time.sleep(3)
+
+
+
 # Receber os dados enviados por udp (parece que funciona) (retirar os prints depois)
 def receive_data_udp():
 
@@ -58,6 +102,12 @@ def receive_data_udp():
 def send_command(device_id: str, request: dict):
 
     device_ip = storage.connections_id[device_id]
+
+    while storage.flags_devices[device_ip] == 1:
+        pass
+    
+    with connection_server.lock:
+        storage.flags_devices[device_ip] = 1
 
     if ( 1 <= int(request['Comando']) <= len(storage.devices_commands_description[device_ip])):
 
@@ -82,21 +132,31 @@ def send_command(device_id: str, request: dict):
         storage.connections[device_ip].send(str(request).encode('utf-8'))
         response = eval(storage.connections[device_ip].recv(2048).decode('utf-8'))
 
+    with connection_server.lock:
+        storage.flags_devices[device_ip] = 0
+
     return response
 
 
 def validate_communication( device_id: str) -> bool: 
 
+    device_ip = storage.connections_id[device_id]
+
+    while storage.flags_devices[device_ip] == 1:
+        pass
+
+    with connection_server.lock:
+        storage.flags_devices[device_ip] = 1
+
     connected = True
 
     try:
-        device_ip = storage.connections_id[device_id]
 
         request = {'Comando': '0'}
         storage.connections[device_ip].send(str(request).encode('utf-8'))
         storage.connections[device_ip].recv(2048).decode('utf-8')
 
-    except (ConnectionResetError, ConnectionAbortedError, socket.timeout) as e:
+    except (ConnectionResetError, ConnectionAbortedError, socket.timeout, BrokenPipeError) as e:
         connected = False
             
     if (connected == False):  
@@ -105,8 +165,13 @@ def validate_communication( device_id: str) -> bool:
         storage.connections[device_ip].close()
         storage.connections.pop(device_ip)
         storage.devices_commands_description.pop(device_ip)
+        storage.flags_devices.pop(device_ip)
+
         if device_ip in storage.data_udp_devices:
             storage.data_udp_devices.pop(device_ip)
+
+    with connection_server.lock:
+        storage.flags_devices[device_ip] = 0
 
     return connected
 

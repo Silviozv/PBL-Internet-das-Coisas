@@ -2,6 +2,7 @@
 
 import socket
 import threading
+import time
 
 
 class Connection_device:
@@ -24,7 +25,7 @@ class Connection_device:
         self.udp_device = socket.socket( socket.AF_INET, socket.SOCK_DGRAM)
 
         self.server_ip = ""
-        self.server_connected = False
+        self.server_status = 'Desconectado'
         self.lock = threading.Lock()
 
 
@@ -41,28 +42,30 @@ class Connection_device:
         :rtype: str
         """
 
-        if self.server_connected == False:
+        if self.server_status == 'Desconectado':
             server_ip = input("\n  IP servidor: ").strip()
             try:
                 self.tcp_device.settimeout(5)
                 self.tcp_device.connect( (server_ip, self.tcp_port))
                 self.tcp_device.send("Conexão".encode('utf-8'))
-                self.tcp_device.send(str(commands_description).encode('utf-8'))
                 self.device_id = self.tcp_device.recv(2048).decode('utf-8')
-                self.tcp_device.settimeout(None)
+                self.tcp_device.send(str(commands_description).encode('utf-8'))
 
                 with self.lock:
                     self.server_ip = server_ip
-                    self.server_connected = True
+                    self.server_status = 'Conectado'
 
                 return "Conexão estabelecida"
                     
             except (ConnectionRefusedError, socket.gaierror, socket.timeout, OSError) as e:
                 return "Conexão impossibilitada"
 
-        else:
+        elif self.server_status == 'Conectado':
             return "Conexão já estabelecida"
-
+        
+        elif self.server_status == 'Reconectando':
+            return "Tentando reconectar com o servidor atual..."
+        
 
     def end_connection(self) -> str:
         """
@@ -73,10 +76,10 @@ class Connection_device:
         :rtype: str
         """
 
-        if self.server_connected == True:
+        if self.server_status == 'Conectado' or self.server_status == 'Reconectando':
 
             with self.lock:
-                self.server_connected = False
+                self.server_status = 'Desconectado'
                 self.server_ip = ""
                 self.device_id = "-----"
                 self.tcp_device.close()
@@ -96,15 +99,9 @@ class Connection_device:
         self.tcp_device = socket.socket( socket.AF_INET, socket.SOCK_STREAM)
 
 
-    def check_connection(self):
-        """
-        Checa se o servidor ainda está conectado ao dispositivo, ou se a conexão foi descartada. É 
-        feito um novo objeto de conexão TCP para iniciar uma nova comunicação de checagem. Se for 
-        retornado que o servidor não está conectado ao dispositivo, os dados da comunicação principal  
-        são encerrados.
-        """
+    def loop_reconnection(self, commands_description: dict):
 
-        if self.server_connected == True:
+        while self.server_status == 'Reconectando':
 
             try:
                 tcp_device_check = socket.socket( socket.AF_INET, socket.SOCK_STREAM)
@@ -112,7 +109,17 @@ class Connection_device:
                 tcp_device_check.connect( (self.server_ip, self.tcp_port))
                 tcp_device_check.send("Checagem".encode('utf-8'))
                 response = tcp_device_check.recv(2048).decode('utf-8')
+
                 if response == "Desconectado":
-                    self.end_connection()
+                    self.tcp_device = socket.socket( socket.AF_INET, socket.SOCK_STREAM)
+                    self.tcp_device.settimeout(10)
+                    self.tcp_device.connect( (self.server_ip, self.tcp_port))
+                    self.tcp_device.send("Conexão".encode('utf-8'))
+                    self.device_id = self.tcp_device.recv(2048).decode('utf-8')
+                    self.tcp_device.send(str(commands_description).encode('utf-8'))
+
+                    with self.lock:
+                        self.server_status = 'Conectado'
+
             except (ConnectionRefusedError, socket.gaierror, socket.timeout, OSError) as e:
-                self.end_connection()
+                time.sleep(2)
