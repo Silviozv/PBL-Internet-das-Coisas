@@ -1,16 +1,18 @@
-"""Módulo contendo a classe do radio."""
+"""
+Módulo contendo a classe do Radio.
+"""
 
 import socket
 import threading
 
 
 class Radio:
-    """ Classe que representa um radio. """
+    """ Classe que representa um Radio. """
 
 
     def __init__(self):
         """
-        Inicialização dos atributos base do radio. Incluindo: a descrição, o status, os dados da 
+        Inicialização dos atributos base do Radio. Incluindo: a descrição, o status, os dados da 
         música atual, os comandos disponíveis para o usuário e as suas descrições.
         """
 
@@ -27,8 +29,8 @@ class Radio:
         """
         Retorna os dados que devem ser exibidos na opção de "Consultar dados" do dispositivo.
 
-        :param server_connected: Indicação se o servidor está conectado ou não.
-        :type server_connected: bool
+        :param server_status: Indicação do status atual da conexão com o servidor.
+        :type server_status: str
         :param id: ID do dispositivo.
         :type id: str
         :return: Dados que devem ser exibidos na opção de "Consultar dados".
