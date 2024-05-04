@@ -284,7 +284,7 @@ def get_device_commands_description( device_id: str):
 def get_data_udp( device_ip: str) -> dict:
     """
     Retorna os dados coletados pelo canal de comunicação UDP. Foi 
-    setado um intervalo de tempo de 4 segundo para o dado ser enviado 
+    setado um intervalo de tempo de 2 segundo para o dado ser enviado 
     pelo dispositivo. Se não for detectado o recebimento, significa que 
     o dispositivo não está enviando dados. Se for recebido, é retornado.
 
