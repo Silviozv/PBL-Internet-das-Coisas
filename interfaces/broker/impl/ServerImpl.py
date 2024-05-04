@@ -78,9 +78,10 @@ def loop_validate_communication( device_id: str):
 
         except (KeyError) as e:
             pass
-
-        with connection_server.lock:     
-            storage.flags_devices[device_ip] = 0
+        
+        if device_ip in storage.flags_devices:
+            with connection_server.lock:     
+                storage.flags_devices[device_ip] = 0
 
         time.sleep(3)
 
@@ -171,8 +172,9 @@ def validate_communication( device_id: str) -> bool:
                     if device_ip in storage.data_udp_devices:
                         storage.data_udp_devices.pop(device_ip)
 
-            with connection_server.lock:
-                storage.flags_devices[device_ip] = 0
+            if device_ip in storage.flags_devices:
+                with connection_server.lock:
+                    storage.flags_devices[device_ip] = 0
 
         else:
             connected = False
