@@ -1,10 +1,25 @@
+""" 
+Módulo contendo as funções de implementação do sensor de temperatura, incluindo: o menu 
+de requisições do usuário, o 'looping' de recebimento das requisições do servidor, e 
+o envio periódico dos dados armazenados na medida de temperatura.
+"""
+
 import socket
 import os
 import time
 import threading
 
-# Menu de opções diretas para o dispositivo (parece que as opções funcionam bem, incluindo a conexão e desconexão)
-def menu( sensor, connection):
+
+def menu( sensor: object, connection: object):
+    """
+    Menu de opções do dispositivo. São exibidas as opções do menu, e as resposta das 
+    requisições do usuário logo abaixo. Ocorre a atualização da tela a cada requisição. 
+
+    :param sensor: Objeto que representa o sensor de temperatura.
+    :type sensor: object
+    :param connection: Objeto que representa a conexão do dispositivo com o servidor.
+    :type connection: object
+    """
 
     show_msg = 'Sistema iniciado'
 
@@ -37,14 +52,31 @@ def menu( sensor, connection):
 
         clear_terminal()
 
-# Receber requisições do servidor (O primeiro comando funciona)
+
 def server_request_tcp( sensor, connection):
+    """
+    Recebimento das requisições do servidor e envio das resposta de retorno. Se o 
+    servidor estiver conectado, é esperada a requisição, depois, é verificado se o 
+    comando recebido é válido ou não. Descrição do protocolo:
+
+    0: Envio periódico para confirmar a conexão;
+    1: Ligar dispositivo;
+    2: Desligar dispositivo;
+    3: Enviar medida de temperatura, porém, como esse dado é enviado periodicamente por 
+       comunicação UDP, esse comando não é recebido, estando destacado só como representação;
+    4: Envio da descrição geral do dispositivo;
+    5: Envio dos comandos disponíveis ao usuário.
+
+    Se o comando 0 não for recebido no tempo indicado, ou a conexão for encerrada, é 
+    iniciado o 'looping' de reconexão paralelamente.
+
+    :param sensor: Objeto que representa o sensor de temperatura.
+    :type sensor: object
+    :param connection: Objeto que representa a conexão do dispositivo com o servidor.
+    :type connection: object
+    """
 
     while True:
-
-        # Comando 1: get status
-        # Comando 2: get descrição geral
-        # Comando 3: get comandos disponíveis
 
         if (connection.server_status == 'Conectado'):
 
@@ -62,20 +94,16 @@ def server_request_tcp( sensor, connection):
                 if ( not (-1 < request['Comando'] <= len(sensor.get_available_commands()) + 2)):
                     raise ValueError
 
-                # Opções de respostas de comandos em desenvolvimento
                 if (request['Comando'] == 0):
-
                     response = 'Recebido'
                     connection.tcp_device.send(response.encode('utf-8'))
 
                 elif (request['Comando'] == 1):
-
                     response_message = sensor.turn_on()
                     response = {'Resposta': response_message}
                     connection.tcp_device.send(str(response).encode('utf-8'))
 
                 elif (request['Comando'] == 2):
-
                     response_message = sensor.turn_off()
                     response = {'Resposta': response_message}
                     connection.tcp_device.send(str(response).encode('utf-8'))
@@ -84,13 +112,11 @@ def server_request_tcp( sensor, connection):
                     pass
 
                 elif (request['Comando'] == 4):
-                    
                     general_description = sensor.get_general_description()
                     response = {'Resposta': general_description}
                     connection.tcp_device.send(str(response).encode('utf-8'))
 
                 elif (request['Comando'] == 5):
-
                     available_commands = sensor.get_available_commands()
                     response = {'Resposta': available_commands}
                     connection.tcp_device.send(str(response).encode('utf-8'))
@@ -99,32 +125,51 @@ def server_request_tcp( sensor, connection):
                 response = {'Resposta': 'Comando inválido'}
                 connection.tcp_device.send(str(response).encode('utf-8'))
 
-            except (ConnectionAbortedError, ConnectionResetError, OSError, socket.timeout) as e:   # Quando o dispositivo cancela a comunicação
+            except (ConnectionAbortedError, ConnectionResetError, OSError, socket.timeout) as e:  
                 if connection.server_ip != "":
                     connection.server_status = 'Reconectando'
-                    threading.Thread(target=connection.loop_reconnection, args=[ sensor.get_available_commands()]).start()
+                    threading.Thread(target=connection.loop_reconnection, args=[ sensor.get_commands_description()]).start()
 
 
-# Enviar os dados via UDP (parece que ta funcionando)
 def send_data_udp( sensor, connection):    
+    """
+    'Looping' de envio dos dados periódicos via comunicação UDP. Os dados só são enviados 
+    se o servidor estiver conectado e alguma medida de temperatura esteja setada. Dependendo 
+    do status do dispositivo, os dados enviados podem ser válidos ou não.
+
+    :param sensor: Objeto que representa o sensor de temperatura.
+    :type sensor: object
+    :param connection: Objeto que representa a conexão do dispositivo com o servidor.
+    :type connection: object
+    """
 
     while True:
             
-        if (connection.server_ip != "" and sensor.temperature != "-----"):
+        if (connection.server_status == "Conectado" and sensor.temperature != "-----"):
             
-            if (sensor.status == 'ligado'):
-                data = sensor.get_returning_data()
-                data['Válido'] = True
-            elif (sensor.status == 'desligado'):
-                data = {}
-                data['Válido'] = False
-                data['Justificativa'] = 'Dispositivo desligado, não é possível coletar os dados'
-            connection.udp_device.sendto( str(data).encode('utf-8'), (connection.server_ip, connection.udp_port))
+            try:
+                if (sensor.status == 'ligado'):
+                    data = sensor.get_returning_data()
+                    data['Válido'] = True
+                elif (sensor.status == 'desligado'):
+                    data = {}
+                    data['Válido'] = False
+                    data['Justificativa'] = 'Dispositivo desligado, não é possível coletar os dados'
+                connection.udp_device.sendto( str(data).encode('utf-8'), (connection.server_ip, connection.udp_port))
+
+            except (OSError, socket.timeout) as e:
+                pass
 
         time.sleep(0.5)
 
 
 def show_scream( show_msg):
+    """
+    Exibição da tela do dispositivo ao usuário. 
+
+    :param show_msg: Texto que deve ser exibido abaixo das requisições, podendo ser uma 
+    string ou um dicionário.
+    """
 
     print("\n+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-+")
     print("|                            SENSOR DE TEMPERATURA                            |")
@@ -145,6 +190,7 @@ def show_scream( show_msg):
         len_msg = len(show_msg)
         space_beginning = (77 - len_msg) // 2
         space_ending = 77 - (space_beginning + len_msg)
+
         print("+-----------------------------------------------------------------------------+")
         print("|" + " " * space_beginning + show_msg + " " * space_ending + "|")
         print("+-----------------------------------------------------------------------------+")
@@ -159,10 +205,14 @@ def show_scream( show_msg):
         print("| ID: " + show_msg['ID'] + " " * space_id + " | Status: " + show_msg['Status'] + " " * space_status + " | Temperatura: " + show_msg['Temperatura'] + " " * space_temperature + " | Servidor: " + show_msg['Servidor'] + " " * space_server + " |")
         print("+-----------+-------------------+--------------------+------------------------+")
 
+
 def clear_terminal():
-    
-    if os.name == 'nt':  # Windows
+    """
+    Limpa os dados da tela de exibição do usuário, adaptando-se ao sistema operacional atual. 
+    """
+
+    if os.name == 'nt':  
         os.system('cls')
-    else:  # Outros sistemas (Linux, macOS)
+    else: 
         os.system('clear')
     

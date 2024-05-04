@@ -1,10 +1,23 @@
+""" 
+Módulo contendo as funções de implementação do Radio, incluindo: o menu 
+de requisições do usuário e o 'looping' de recebimento das requisições do servidor.
+"""
+
 import socket
 import os
 import threading
 
 
-# Menu de opções diretas para o dispositivo (parece que as opções funcionam bem, incluindo a conexão e desconexão)
 def menu( radio, connection):
+    """
+    Menu de opções do dispositivo. São exibidas as opções do menu, e as resposta das 
+    requisições do usuário logo abaixo. Ocorre a atualização da tela a cada requisição. 
+
+    :param radio: Objeto que representa o radio.
+    :type radio: object
+    :param connection: Objeto que representa a conexão do dispositivo com o servidor.
+    :type connection: object
+    """
 
     show_msg = 'Sistema iniciado'
 
@@ -44,14 +57,32 @@ def menu( radio, connection):
 
         clear_terminal()
 
-# Receber requisições do servidor (O primeiro comando funciona)
+
 def server_request_tcp( radio, connection):
+    """
+    Recebimento das requisições do servidor e envio das resposta de retorno. Se o 
+    servidor estiver conectado, é esperada a requisição, depois, é verificado se o 
+    comando recebido é válido ou não. Descrição do protocolo:
+
+    0: Envio periódico para confirmar a conexão;
+    1: Ligar dispositivo;
+    2: Desligar dispositivo;
+    3: Setar música;
+    4: Colocar música para tocar;
+    5: Pausar música;
+    6: Envio da descrição geral do dispositivo;
+    7: Envio dos comandos disponíveis ao usuário.
+
+    Se o comando 0 não for recebido no tempo indicado, ou a conexão for encerrada, é 
+    iniciado o 'looping' de reconexão paralelamente.
+
+    :param radio: Objeto que representa o radio.
+    :type radio: object
+    :param connection: Objeto que representa a conexão do dispositivo com o servidor.
+    :type connection: object
+    """
 
     while True:
-
-        # Comando 1: get status
-        # Comando 2: get descrição geral
-        # Comando 3: get comandos disponíveis
 
         if (connection.server_status == 'Conectado'):
 
@@ -71,48 +102,40 @@ def server_request_tcp( radio, connection):
 
                 # Opções de respostas de comandos em desenvolvimento
                 if (request['Comando'] == 0):
-
                     response = 'Recebido'
                     connection.tcp_device.send(response.encode('utf-8'))
 
                 elif (request['Comando'] == 1):
-
                     response_message = radio.turn_on()
                     response = {'Resposta': response_message}
                     connection.tcp_device.send(str(response).encode('utf-8'))
 
                 elif (request['Comando'] == 2):
-
                     response_message = radio.turn_off()
                     response = {'Resposta': response_message}
                     connection.tcp_device.send(str(response).encode('utf-8'))
 
                 elif (request['Comando'] == 3):
-                    
                     response_message = radio.set_music(request['Entrada'])
                     response = {'Resposta': response_message}
                     connection.tcp_device.send(str(response).encode('utf-8'))
 
                 elif (request['Comando'] == 4):
-
                     response_message = radio.play_music()
                     response = {'Resposta': response_message}
                     connection.tcp_device.send(str(response).encode('utf-8'))
 
                 elif (request['Comando'] == 5):
-
                     response_message = radio.pause_music()
                     response = {'Resposta': response_message}
                     connection.tcp_device.send(str(response).encode('utf-8'))    
 
                 elif (request['Comando'] == 6):
-                    
                     general_description = radio.get_general_description()
                     response = {'Resposta': general_description}
                     connection.tcp_device.send(str(response).encode('utf-8'))
 
                 elif (request['Comando'] == 7):
-
                     available_commands = radio.get_available_commands()
                     response = {'Resposta': available_commands}
                     connection.tcp_device.send(str(response).encode('utf-8'))
@@ -124,9 +147,16 @@ def server_request_tcp( radio, connection):
             except (ConnectionAbortedError, ConnectionResetError, OSError, socket.timeout) as e:   # Quando o dispositivo cancela a comunicação
                 if connection.server_ip != "":
                     connection.server_status = 'Reconectando'
-                    threading.Thread(target=connection.loop_reconnection, args=[ radio.get_available_commands()]).start()
+                    threading.Thread(target=connection.loop_reconnection, args=[ radio.get_commands_description()]).start()
+
 
 def show_scream( show_msg):
+    """
+    Exibição da tela do dispositivo ao usuário. 
+
+    :param show_msg: Texto que deve ser exibido abaixo das requisições, podendo ser uma 
+    string ou um dicionário.
+    """
 
     print("\n+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-+")
     print("|                        APARELHO DE SOM VIA INTERNET                         |")
@@ -173,8 +203,11 @@ def show_scream( show_msg):
 
 
 def clear_terminal():
+    """
+    Limpa os dados da tela de exibição do usuário, adaptando-se ao sistema operacional atual. 
+    """
     
-    if os.name == 'nt':  # Windows
+    if os.name == 'nt':  
         os.system('cls')
-    else:  # Outros sistemas (Linux, macOS)
+    else: 
         os.system('clear')
