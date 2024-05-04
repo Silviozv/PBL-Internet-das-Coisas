@@ -52,16 +52,14 @@ def loop_validate_communication( device_id: str):
     device_ip  = storage.connections_id[device_id]
 
     while (device_ip in storage.connections):
-            
-        while storage.flags_devices[device_ip] == 1:
-            pass
-
-        with connection_server.lock:
-            storage.flags_devices[device_ip] = 1
-
+        
         try:
-            
-            device_ip = storage.connections_id[device_id]
+
+            while storage.flags_devices[device_ip] == 1:
+                pass
+
+            with connection_server.lock:
+                storage.flags_devices[device_ip] = 1
 
             request = {'Comando': '0'}
             with connection_server.lock:
@@ -70,7 +68,6 @@ def loop_validate_communication( device_id: str):
 
         except (ConnectionResetError, ConnectionAbortedError, socket.timeout, BrokenPipeError) as e:
             with connection_server.lock:
-                device_ip = storage.connections_id[device_id]
                 storage.connections_id.pop(device_id)
                 storage.connections[device_ip].close()
                 storage.connections.pop(device_ip)
@@ -78,6 +75,9 @@ def loop_validate_communication( device_id: str):
                 storage.flags_devices.pop(device_ip)
                 if device_ip in storage.data_udp_devices:
                     storage.data_udp_devices.pop(device_ip)
+
+        except (KeyError) as e:
+            pass
 
         with connection_server.lock:     
             storage.flags_devices[device_ip] = 0
@@ -142,36 +142,40 @@ def validate_communication( device_id: str) -> bool:
         device_ip = storage.connections_id[device_id]
 
         while storage.flags_devices[device_ip] == 1:
-            pass
+                pass
 
         with connection_server.lock:
             storage.flags_devices[device_ip] = 1
 
-        connected = True
+        if device_id in storage.connections_id:
 
-        try:
-            request = {'Comando': '0'}
+            connected = True
+
+            try:
+                request = {'Comando': '0'}
+                with connection_server.lock:
+                    storage.connections[device_ip].send(str(request).encode('utf-8'))
+                    storage.connections[device_ip].recv(2048).decode('utf-8')
+
+            except (ConnectionResetError, ConnectionAbortedError, socket.timeout, BrokenPipeError) as e:
+                connected = False
+                    
+            if (connected == False):  
+                with connection_server.lock:
+                    storage.connections_id.pop(device_id)
+                    storage.connections[device_ip].close()
+                    storage.connections.pop(device_ip)
+                    storage.devices_commands_description.pop(device_ip)
+                    storage.flags_devices.pop(device_ip)
+
+                    if device_ip in storage.data_udp_devices:
+                        storage.data_udp_devices.pop(device_ip)
+
             with connection_server.lock:
-                storage.connections[device_ip].send(str(request).encode('utf-8'))
-                storage.connections[device_ip].recv(2048).decode('utf-8')
+                storage.flags_devices[device_ip] = 0
 
-        except (ConnectionResetError, ConnectionAbortedError, socket.timeout, BrokenPipeError) as e:
+        else:
             connected = False
-                
-        if (connected == False):  
-            with connection_server.lock:
-                device_ip = storage.connections_id[device_id]
-                storage.connections_id.pop(device_id)
-                storage.connections[device_ip].close()
-                storage.connections.pop(device_ip)
-                storage.devices_commands_description.pop(device_ip)
-                storage.flags_devices.pop(device_ip)
-
-                if device_ip in storage.data_udp_devices:
-                    storage.data_udp_devices.pop(device_ip)
-
-        with connection_server.lock:
-            storage.flags_devices[device_ip] = 0
 
     else:
         connected = False
