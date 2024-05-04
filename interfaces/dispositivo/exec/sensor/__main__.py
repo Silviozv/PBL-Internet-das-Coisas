@@ -19,7 +19,6 @@ if __name__=="__main__":
     sensor = Sensor()
     connection = Connection_device()
 
-    # A lógica de receber comandos e poder executar opções do menu parecem funcionar
     threading.Thread(target=server_request_tcp, args=[ sensor, connection]).start()
     threading.Thread(target=send_data_udp, args=[ sensor, connection]).start()
     menu( sensor, connection)

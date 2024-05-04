@@ -19,6 +19,5 @@ if __name__=="__main__":
     radio = Radio()
     connection = Connection_device()
 
-    # A lógica de receber comandos e poder executar opções do menu parecem funcionar
     threading.Thread(target=server_request_tcp, args=[ radio, connection]).start()
     menu( radio, connection)
