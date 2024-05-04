@@ -34,12 +34,12 @@ def dealing_connection_tcp( connection_sender: object, address_sender: str):
     elif (response == "Conexão"):
 
         with connection_server.lock:
-            connection_sender.settimeout(6)
+            connection_sender.settimeout(5)
             device_id = calculate_device_id(address_sender)
             storage.connections_id[device_id] = address_sender
             storage.connections[address_sender] = connection_sender
-            storage.devices_commands_description[address_sender] = eval(storage.connections[address_sender].recv(2048).decode('utf-8'))
             storage.connections[address_sender].send(device_id.encode('utf-8'))
+            storage.devices_commands_description[address_sender] = eval(storage.connections[address_sender].recv(2048).decode('utf-8'))
             storage.flags_devices[address_sender] = 0
 
         print("Nova conexao:", address_sender)
@@ -64,27 +64,25 @@ def loop_validate_communication( device_id: str):
             device_ip = storage.connections_id[device_id]
 
             request = {'Comando': '0'}
-            print(request)
-            print(storage.connections[device_ip])
-            storage.connections[device_ip].send(str(request).encode('utf-8'))
-            storage.connections[device_ip].recv(2048).decode('utf-8')
+            with connection_server.lock:
+                storage.connections[device_ip].send(str(request).encode('utf-8'))
+                storage.connections[device_ip].recv(2048).decode('utf-8')
 
         except (ConnectionResetError, ConnectionAbortedError, socket.timeout, BrokenPipeError) as e:
-            print(e)
-            device_ip = storage.connections_id[device_id]
-            storage.connections_id.pop(device_id)
-            storage.connections[device_ip].close()
-            storage.connections.pop(device_ip)
-            storage.devices_commands_description.pop(device_ip)
-            storage.flags_devices.pop(device_ip)
-            if device_ip in storage.data_udp_devices:
-                storage.data_udp_devices.pop(device_ip)
+            with connection_server.lock:
+                device_ip = storage.connections_id[device_id]
+                storage.connections_id.pop(device_id)
+                storage.connections[device_ip].close()
+                storage.connections.pop(device_ip)
+                storage.devices_commands_description.pop(device_ip)
+                storage.flags_devices.pop(device_ip)
+                if device_ip in storage.data_udp_devices:
+                    storage.data_udp_devices.pop(device_ip)
 
         with connection_server.lock:     
             storage.flags_devices[device_ip] = 0
 
         time.sleep(3)
-
 
 
 # Receber os dados enviados por udp (parece que funciona) (retirar os prints depois)
@@ -112,9 +110,9 @@ def send_command(device_id: str, request: dict):
     if ( 1 <= int(request['Comando']) <= len(storage.devices_commands_description[device_ip])):
 
         if ( storage.devices_commands_description[device_ip][request['Comando']]['Coleta de dados UDP'] == False):
-            
-            storage.connections[device_ip].send(str(request).encode('utf-8'))
-            response = eval(storage.connections[device_ip].recv(2048).decode('utf-8'))
+            with connection_server.lock:
+                storage.connections[device_ip].send(str(request).encode('utf-8'))
+                response = eval(storage.connections[device_ip].recv(2048).decode('utf-8'))
 
         elif ( storage.devices_commands_description[device_ip][request['Comando']]['Coleta de dados UDP'] == True):
             
@@ -128,9 +126,9 @@ def send_command(device_id: str, request: dict):
                 response = {'Resposta': data}
 
     else:
-
-        storage.connections[device_ip].send(str(request).encode('utf-8'))
-        response = eval(storage.connections[device_ip].recv(2048).decode('utf-8'))
+        with connection_server.lock:
+            storage.connections[device_ip].send(str(request).encode('utf-8'))
+            response = eval(storage.connections[device_ip].recv(2048).decode('utf-8'))
 
     with connection_server.lock:
         storage.flags_devices[device_ip] = 0
@@ -153,22 +151,24 @@ def validate_communication( device_id: str) -> bool:
     try:
 
         request = {'Comando': '0'}
-        storage.connections[device_ip].send(str(request).encode('utf-8'))
-        storage.connections[device_ip].recv(2048).decode('utf-8')
+        with connection_server.lock:
+            storage.connections[device_ip].send(str(request).encode('utf-8'))
+            storage.connections[device_ip].recv(2048).decode('utf-8')
 
     except (ConnectionResetError, ConnectionAbortedError, socket.timeout, BrokenPipeError) as e:
         connected = False
             
     if (connected == False):  
-        device_ip = storage.connections_id[device_id]
-        storage.connections_id.pop(device_id)
-        storage.connections[device_ip].close()
-        storage.connections.pop(device_ip)
-        storage.devices_commands_description.pop(device_ip)
-        storage.flags_devices.pop(device_ip)
+        with connection_server.lock:
+            device_ip = storage.connections_id[device_id]
+            storage.connections_id.pop(device_id)
+            storage.connections[device_ip].close()
+            storage.connections.pop(device_ip)
+            storage.devices_commands_description.pop(device_ip)
+            storage.flags_devices.pop(device_ip)
 
-        if device_ip in storage.data_udp_devices:
-            storage.data_udp_devices.pop(device_ip)
+            if device_ip in storage.data_udp_devices:
+                storage.data_udp_devices.pop(device_ip)
 
     with connection_server.lock:
         storage.flags_devices[device_ip] = 0

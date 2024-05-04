@@ -112,7 +112,7 @@ class Connection_device:
 
                 if response == "Desconectado":
                     self.tcp_device = socket.socket( socket.AF_INET, socket.SOCK_STREAM)
-                    self.tcp_device.settimeout(10)
+                    self.tcp_device.settimeout(5)
                     self.tcp_device.connect( (self.server_ip, self.tcp_port))
                     self.tcp_device.send("Conexão".encode('utf-8'))
                     self.device_id = self.tcp_device.recv(2048).decode('utf-8')
