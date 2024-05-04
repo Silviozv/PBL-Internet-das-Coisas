@@ -225,7 +225,7 @@ def process_option( info: dict):
                 
                 else:
                     commands_description = response.json()
-
+                    
                     if ( command not in commands_description.keys()):
                         raise ValueError
 
