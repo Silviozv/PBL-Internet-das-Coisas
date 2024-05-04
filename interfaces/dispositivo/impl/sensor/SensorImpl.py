@@ -160,7 +160,7 @@ def send_data_udp( sensor, connection):
             except (OSError, socket.timeout) as e:
                 pass
 
-        time.sleep(0.5)
+        time.sleep(0.8)
 
 
 def show_scream( show_msg):
