@@ -7,7 +7,7 @@ import __init__
 
 from model.Sensor import Sensor
 from model.Connection_device import Connection_device
-from impl.sensor.SensorImpl import server_request_tcp, send_data_udp, menu
+from impl.SensorImpl import server_request_tcp, send_data_udp, menu
 
 
 if __name__=="__main__":

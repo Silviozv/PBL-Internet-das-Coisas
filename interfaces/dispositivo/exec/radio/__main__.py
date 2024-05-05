@@ -7,7 +7,7 @@ import __init__
 
 from model.Radio import Radio
 from model.Connection_device import Connection_device
-from impl.radio.RadioImpl import server_request_tcp, menu
+from impl.RadioImpl import server_request_tcp, menu
 
 
 if __name__=="__main__":
