@@ -127,6 +127,10 @@ class Connection_device:
 
                     with self.lock:
                         self.server_status = 'Conectado'
+
+                elif response == "Conectado":
+                    with self.lock:
+                        self.server_status = 'Conectado'
                         
             except (ConnectionRefusedError, socket.gaierror, socket.timeout, OSError) as e:
                 time.sleep(2)
