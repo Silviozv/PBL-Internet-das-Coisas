@@ -88,21 +88,13 @@ class Connection_device:
                 self.server_ip = ""
                 self.device_id = "-----"
                 self.tcp_device.close()
-                self.restart_tcp_obj()
+                self.tcp_device = socket.socket( socket.AF_INET, socket.SOCK_STREAM)
 
             return "Conexão encerrada"
 
         else:
             return "Não há um servidor conectado"
-
-
-    def restart_tcp_obj(self):
-        """
-        Reseta o objeto da comunicação que segue o protocolo TCP.
-        """
-
-        self.tcp_device = socket.socket( socket.AF_INET, socket.SOCK_STREAM)
-
+        
 
     def loop_reconnection(self, commands_description: dict):
         """
