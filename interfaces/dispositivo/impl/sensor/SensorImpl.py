@@ -91,7 +91,7 @@ def server_request_tcp( sensor, connection):
 
                 request['Comando'] = int(request['Comando'])
 
-                if ( not (-1 < request['Comando'] <= len(sensor.get_available_commands()) + 2)):
+                if ( not (-1 < request['Comando'] <= len(sensor.get_commands_description()) + 1)):
                     raise ValueError
 
                 if (request['Comando'] == 0):
@@ -114,11 +114,6 @@ def server_request_tcp( sensor, connection):
                 elif (request['Comando'] == 4):
                     general_description = sensor.get_general_description()
                     response = {'Resposta': general_description}
-                    connection.tcp_device.send(str(response).encode('utf-8'))
-
-                elif (request['Comando'] == 5):
-                    available_commands = sensor.get_available_commands()
-                    response = {'Resposta': available_commands}
                     connection.tcp_device.send(str(response).encode('utf-8'))
 
             except (ValueError) as e:

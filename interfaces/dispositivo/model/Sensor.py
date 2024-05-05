@@ -16,13 +16,14 @@ class Sensor:
         dados da temperatura, os comandos disponíveis para o usuário e as suas descrições.
         """
 
-        self.local_ip = socket.gethostbyname( socket.gethostname())
         self.description = 'Sensor de temperatura'
         self.status = 'desligado'
         self.temperature = '-----'
 
-        self.available_commands = {'1': 'Ligar', '2': 'Desligar', '3': 'Retornar medida de temperatura'}
-        self.commands_description = {'1': {'Entrada': '', 'Método HTTP': 'POST', 'Coleta de dados UDP': False}, '2': {'Entrada': '', 'Método HTTP': 'POST', 'Coleta de dados UDP': False}, '3': {'Entrada': '', 'Método HTTP': 'GET', 'Coleta de dados UDP': True}}
+        self.commands_description = {
+            '1': {'Descrição': 'Ligar', 'Entrada': '', 'Método HTTP': 'POST', 'Coleta de dados UDP': False}, 
+            '2': {'Descrição': 'Desligar', 'Entrada': '', 'Método HTTP': 'POST', 'Coleta de dados UDP': False}, 
+            '3': {'Descrição': 'Retornar medida de temperatura', 'Entrada': '', 'Método HTTP': 'GET', 'Coleta de dados UDP': True}}
 
 
     def get_query_data(self, server_status: str, id: str) -> dict:
@@ -77,17 +78,6 @@ class Sensor:
         status = self.status.capitalize()
         general_description = {'Descrição': self.description, 'Status': status} 
         return general_description
-    
-
-    def get_available_commands(self) -> dict:
-        """
-        Retorna as requisições disponíveis para o usuário fazer ao dispositivo.
-
-        :return: Possíveis requisições.
-        :rtype: dict
-        """
-
-        return self.available_commands
     
 
     def get_commands_description(self) -> dict:

@@ -97,7 +97,7 @@ def server_request_tcp( radio, connection):
 
                 request['Comando'] = int(request['Comando'])
 
-                if ( not (-1 < request['Comando'] <= len(radio.get_available_commands()) + 2)):
+                if ( not (-1 < request['Comando'] <= len(radio.get_commands_description()) + 1)):
                     raise ValueError
 
                 # Opções de respostas de comandos em desenvolvimento
@@ -133,11 +133,6 @@ def server_request_tcp( radio, connection):
                 elif (request['Comando'] == 6):
                     general_description = radio.get_general_description()
                     response = {'Resposta': general_description}
-                    connection.tcp_device.send(str(response).encode('utf-8'))
-
-                elif (request['Comando'] == 7):
-                    available_commands = radio.get_available_commands()
-                    response = {'Resposta': available_commands}
                     connection.tcp_device.send(str(response).encode('utf-8'))
 
             except (ValueError) as e:

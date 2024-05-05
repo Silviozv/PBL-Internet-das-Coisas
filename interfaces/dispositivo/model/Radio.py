@@ -21,8 +21,12 @@ class Radio:
         self.music = '-----'
         self.music_status = '-------'
 
-        self.available_commands = {'1': 'Ligar', '2': 'Desligar', '3': 'Setar música', '4': 'Tocar', '5': 'Pausar'}
-        self.commands_description = {'1': {'Entrada': '', 'Método HTTP': 'POST', 'Coleta de dados UDP': False}, '2': {'Entrada': '', 'Método HTTP': 'POST', 'Coleta de dados UDP': False}, '3': {'Entrada': 'Música', 'Método HTTP': 'PATCH', 'Coleta de dados UDP': False}, '4': {'Entrada': '', 'Método HTTP': 'POST', 'Coleta de dados UDP': False}, '5': {'Entrada': '', 'Método HTTP': 'POST', 'Coleta de dados UDP': False}}
+        self.commands_description = {
+            '1': {'Descrição': 'Ligar', 'Entrada': '', 'Método HTTP': 'POST', 'Coleta de dados UDP': False}, 
+            '2': {'Descrição': 'Desligar', 'Entrada': '', 'Método HTTP': 'POST', 'Coleta de dados UDP': False}, 
+            '3': {'Descrição': 'Setar música', 'Entrada': 'Música', 'Método HTTP': 'PATCH', 'Coleta de dados UDP': False}, 
+            '4': {'Descrição': 'Tocar', 'Entrada': '', 'Método HTTP': 'POST', 'Coleta de dados UDP': False}, 
+            '5': {'Descrição': 'Pausar', 'Entrada': '', 'Método HTTP': 'POST', 'Coleta de dados UDP': False}}
 
 
     def get_query_data(self, server_status: str, id: str) -> str:
@@ -65,18 +69,7 @@ class Radio:
         status = self.status.capitalize()
         general_description = {'Descrição': self.description, 'Status do dispositivo': status, 'Música atual': self.music, 'Status da música': self.music_status} 
         return general_description
-    
 
-    def get_available_commands(self) -> list:
-        """
-        Retorna as requisições disponíveis para o usuário fazer ao dispositivo.
-
-        :return: Possíveis requisições.
-        :rtype: dict
-        """
-
-        return self.available_commands
-    
 
     def get_commands_description(self) -> dict:
         """

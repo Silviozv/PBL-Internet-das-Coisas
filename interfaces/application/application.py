@@ -244,13 +244,12 @@ def process_option( info: dict) -> dict:
                     return info
                 
                 else:
-                    response = response.json()
-                    amount_commands = len(response)
+                    commands_description = {}
+                    commands_description_aux = response.json()
+                    for key in commands_description_aux:
+                        commands_description[key] = commands_description_aux[key]['Descrição']
 
-                    url = (f"http://{info['IP servidor']}:5070/devices/{info['ID dispositivo']}/commands/{amount_commands + 2}")
-                    response = requests.get(url, timeout=7).json()
-
-                    info['Informação a ser exibida'] = response['Resposta']
+                    info['Informação a ser exibida'] = commands_description
                     return info
             
             elif ( info['Opção'] == '3'):
