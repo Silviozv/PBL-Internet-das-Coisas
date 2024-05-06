@@ -349,6 +349,87 @@ A seguir, as interfaces exibidas ao usuário para gerenciar os softwares do proj
 
 
 
+<div id="execucao"> <h2> Execução </h2>
+
+<p align="justify"> 
+
+Faça o download do projeto por esse repositório no github. Os programas do projeto podem ser executados de três formas. Elas são explicadas logo abaixo.
+
+**Execução direto**
+
+Método de execução direta através do terminal compilando o código em Python. No terminal do seu aparelho, acesse os seguintes endereços para executar as determinadas entidades:
+
+* interfaces/device/exec/sensor : para executar o sensor de temperatura;
+* interfaces/device/exec/radio : para executar o radio;
+* interfaces/broker/exec : para executar o servidor broker;
+* interfaces/application : para executar a aplicação de gerenciamento.
+
+Após entrar nos endereços, execute o seguinte comando no terminal se o seu sistema operacional for Windows:
+
+	py __main__.py
+
+Caso seja Linux, execute:
+
+	python3 __main__.py
+
+**Construindo imagem e executando container**
+
+Método de execução utilizando a plataforma Docker para construir as imagens e executar os containers. 
+
+Para executar o sensor, entre no endereço "interfaces/device" e execute os seguintes comandos:
+
+	docker build -f dockerfile_sensor -t sensor .
+	docker run -i --network host -e TERM=xterm sensor
+
+Para executar o radio, entre no mesmo endereço e execute:
+
+	docker build -f dockerfile_radio -t radio .
+	docker run -i --network host -e TERM=xterm radio
+
+Para executar o broker, entre no endereço "interfaces/broker" e execute:
+
+	docker build -t broker .
+	docker run -i --network host -e TERM=xterm broker
+
+Para executar a aplicação, entre no endereço "interfaces/application" e execute:
+
+	docker build -t app .
+	docker run -i --network host -e TERM=xterm app
+
+**Coletando imagem pelo Docker Hub**
+
+Ao invés de contruir a imagem, ela pode ser coletada pelo Docker Hub. 
+
+Para o sensor, usa-se os senguintes comandos:
+
+	docker pull silviozv/sensor
+	docker run -i --network host -e TERM=xterm sensor
+
+Para o radio:
+
+	docker pull silviozv/radio
+	docker run -i --network host -e TERM=xterm radio
+
+E para o broker:
+
+	docker pull silviozv/broker
+	docker run -i --network host -e TERM=xterm broker
+
+
+</p>
+</div>
+
+
+
+<div id="conclusao"> <h2> Conclusão </h2>
+
+<p align="justify"> 
+
+</p>
+</div>
+
+
+
 <div id="referencias"> <h2> Referências </h2>
 
 <p align="justify"> 
