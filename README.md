@@ -95,7 +95,7 @@ O programa Insomnia foi usado para testar as rotas da API RESTful sem precisar d
 A estrutura geral do projeto é representada pela comunicação entre as três entidades do sistema, sendo elas: o servidor broker, o dispositivo e a aplicação de gerenciamento do usuário. O número de dispositivos e aplicações podem variar, somente o servidor broker é único para aquela determinada comunicação de rede. Assim, seguindo as indicações de protocolo das requisições, o sistema de rede segue a seguinte estrutura:
 
 <p align="center">
-  <img src="images/image1.jpeg" width = "500" />
+  <img src="images/image1.jpeg" width = "800" />
 </p>
 <p align="center"><strong> Estrutura geral do sistema </strong> </p>
 
@@ -112,7 +112,7 @@ O dispositivo é a entidade que inicia a conexão com o broker, utilizando o can
 Os passos citados são representados no diagrama abaixo:
 
 <p align="center">
-  <img src="images/image2.jpeg" width = "500" />
+  <img src="images/image2.jpeg" width = "800" />
 </p>
 <p align="center"><strong> Iníciando conexão entre o dispositivo e o broker </strong> </p>
 
@@ -125,7 +125,7 @@ No caso de erro de conexão, o dispositivo aciona uma repetição de tentativas 
 O caso de desconexão citado está sendo mostrado no diagrama abaixo:
 
 <p align="center">
-  <img src="images/image3.jpeg" width = "500" />
+  <img src="images/image3.jpeg" width = "800" />
 </p>
 <p align="center"><strong> Reconexão entre o dispositivo e o broker </strong> </p>
 
@@ -146,14 +146,14 @@ Com a conexão do dispositivo e do broker estabelecida, é possível fazer o int
 * No caso da mensagem vinda da aplicação ser um comando de gerenciamento, o dispositivo receberá essa requisição e fará as ações necessários, depois, enviará a resposta para o broker repassar para a aplicação. Como mostrado no diagrama baixo:
 
 <p align="center">
-  <img src="images/image4.jpeg" width = "500" />
+  <img src="images/image4.jpeg" width = "800" />
 </p>
 <p align="center"><strong> Envio de comandos de gerenciamento </strong> </p>
 
 * Se o comando for relacionado a coleta de um dado enviado periodicamente para o broker, via canal de comunicação UDP, não é necessário repassar diretamente o comando para o dispositivo. Esse dado pode ser coletado pelo armazenamento do próprio broker, como mostrado no diagrama abaixo:
 
 <p align="center">
-  <img src="images/image5.jpeg" width = "500" />
+  <img src="images/image5.jpeg" width = "800" />
 </p>
 <p align="center"><strong> Envio de requisição de dados </strong> </p>
 
