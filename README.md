@@ -415,7 +415,7 @@ Para o broker:
 	docker pull silviozv/broker
 	docker run -i --network host -e TERM=xterm silviozv/broker
 
-E para a aplicação e de gerenciamento:
+E para a aplicação de gerenciamento:
 
 	docker pull silviozv/app
 	docker run -i --network host -e TERM=xterm silviozv/app
