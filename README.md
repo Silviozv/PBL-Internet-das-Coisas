@@ -1,4 +1,3 @@
-
 <h1 align="center"> Internet das Coisas </h1>
 <h3 align="center"> Projeto de comunicação e gerenciamento de dispositivos. </h3>  
 
@@ -46,6 +45,8 @@ A seguir, as requisições dos softwares criados e as suas especificações:
 		<li><a href="#aplicacaoGerenciamento"> Aplicação de gerenciamento </a> </li>
 		<li><a href="#formatoMensagens"> Formato das mensagens </a> </li>
 		<li><a href="#interfacesTerminal"> Interfaces no terminal </a> </li>
+		<li><a href="#execucao"> Execução </a> </li>
+		<li><a href="#conclusao">Conclusão </a> </li>
 		<li><a href="#referencias"> Referências </a> </li>
 	</ul>	
 </div>
@@ -99,7 +100,7 @@ A estrutura geral do projeto é representada pela comunicação entre as três e
 </p>
 <p align="center"><strong> Estrutura geral do sistema </strong> </p>
 
-**Processo de conexão: dispositivo e broker**
+### Processo de conexão: dispositivo e broker
 
 O dispositivo é a entidade que inicia a conexão com o broker, utilizando o canal de comunicação TCP. Esse processo segue os seguintes passos:
 
@@ -118,9 +119,9 @@ Os passos citados são representados no diagrama abaixo:
 
 Para manter a conexão entre o dispositivo e o broker, foi implementado um sistema de confirmação periódica. Foi setado, para os dois objetos socket das extremidades da comunicação, um intervalo limite de 5 segundos para receber respostas. 
 
-O dispositivo espera por alguma mensagem a todo momento, e o broker envia a cada 3 segundos comandos de confirmação de conexão, além das requisições assíncronas que podem ocorrer. Se o dispositivo não receber nada no intervalo limite, ocorreu um erro de conexão.
+O dispositivo espera por alguma mensagem a todo momento, e o broker envia a cada 3 segundos comandos de confirmação de conexão. Se o dispositivo não receber nada no intervalo limite, ocorreu um erro de conexão.
 
-No caso de erro de conexão, o dispositivo aciona uma repetição de tentativas de reconexão. Isso é feito criando um novo objeto socket auxiliar que tentará iniciar uma nova conexão com o broker repetidamente, porém, não será para criar uma conexão fixa, mas, sim, para o broker retornar se a conexão anterior ainda está armazenada ou não. Se ela estiver, o processo de esperar requisições continua normalmente, se não, é feito um novo processo para reiniciar a conexão.
+No caso de erro de conexão, o dispositivo inicia o processo de reconexão. Isso é feito criando um novo objeto socket auxiliar que tentará iniciar uma nova conexão com o broker repetidamente, porém, não será para criar uma conexão fixa, mas, sim, para o broker retornar se a conexão anterior ainda está armazenada ou não. Se ela estiver, o processo de esperar requisições continua normalmente, se não, é feito um novo processo para reiniciar a conexão.
 
 O caso de desconexão citado está sendo mostrado no diagrama abaixo:
 
@@ -131,7 +132,7 @@ O caso de desconexão citado está sendo mostrado no diagrama abaixo:
 
 O dispositivo pode desfazer da conexão se for requerido pelo usuário. O broker saberia que o canal de comunicação foi encerrado, e, em seguida, descartaria a conexão da mesma forma.
 
-**Processo de conexão: broker e aplicação**
+### Processo de conexão: broker e aplicação
 
 A aplicação de gerenciamento se comunica com o broker através de chamadas da biblioteca requests, assim, não é preciso manter uma conexão fixa. 
 
@@ -139,18 +140,18 @@ Para enviar comandos a algum dispositivo conectado, é preciso saber previamente
 
 Dessa forma, quando a aplicação tenta enviar um comando a algum dispositivo, primeiramente, é retornado do broker a descrição desse comando, e depois, as preparações são feitas para fazer corretamente o envio para o dispositivo.
 
-**Processo de conexão: dispositivo e aplicação**
+### Processo de conexão: dispositivo e aplicação
 
-Com a conexão do dispositivo e do broker estabelecida, é possível fazer o intermédio entre a aplicação e o dispositivo. O processo de comunicação pode seguir duas linhas de sequência diferentes: enviar comandos de gerenciamento ao dispositivo, por meio do canal de comunicação TCP, ou fazer requisição de coleta de dados, recebidos pelo canal de comunicação UDP do broker.
+Com a conexão do dispositivo e do broker estabelecida, é possível fazer o intermédio entre a aplicação e o dispositivo. O processo de comunicação pode seguir duas linhas de sequência diferentes: enviar comandos de gerenciamento ao dispositivo, por meio do canal de comunicação TCP, ou fazer requisição de coleta de dados que são enviados do dispositivo para o broker via canal de comunicação UDP.
 
-* No caso da mensagem vinda da aplicação ser um comando de gerenciamento, o dispositivo receberá essa requisição e fará as ações necessários, depois, enviará a resposta para o broker repassar para a aplicação. Como mostrado no diagrama baixo:
+* O protocolo TCP é usado para conexões fixas que necessitam de uma lógica de envio e recebimento de dados envolvendo as duas extremidades da comunicação. Por esse motivo, ele foi usado para o envio de comandos de gerencimanto, em que, a aplicação envia um comando, pelo broker, para o dispositivo executar alguma ação, e é esperada uma resposta do resultado dessa ação. A sequência de mensagens desse caso é descrita no diagrama abaixo:
 
 <p align="center">
   <img src="images/image4.jpeg" width = "800" />
 </p>
 <p align="center"><strong> Envio de comandos de gerenciamento </strong> </p>
 
-* Se o comando for relacionado a coleta de um dado enviado periodicamente para o broker, via canal de comunicação UDP, não é necessário repassar diretamente o comando para o dispositivo. Esse dado pode ser coletado pelo armazenamento do próprio broker, como mostrado no diagrama abaixo:
+* O protocolo UDP não é orientado a uma conexão fixa, ou seja, não possui estrutura dependente de retorno ao enviar um dado. Assim, ele foi usado para envio de dados de sensoriamento, do dispositivo para o broker, que não necessitam de uma garantia de chegada ao destino. Nesse caso, a aplicação envia comandos relacionados a coleta de dados transmitidos via canal UDP, e o dispositivo não precisa saber que esses dados foram requisitados, já que o broker já está recebendo-os. O diagrama abaixo mostra essa situação: 
 
 <p align="center">
   <img src="images/image5.jpeg" width = "800" />
@@ -193,33 +194,39 @@ O sensor de temperatura possui os seguintes comandos para gerenciamento pelo pr�
 
 Para o recebimento de requisições do broker, é seguido o seguinte protocolo:
 
-0. Recebimento de envio periódico para manter a comunicação;
-1. Ligar sensor;
-2. Desligar sensor;
-4. Retornar descrição geral do dispositivo.
+| Comando  | Descrição |
+| ------------- | ------------- |
+| 0  | Recebimento de envio periódico para manter a comunicação |
+| 1  | Ligar sensor |
+| 2  | Desligar sensor |
+| 4  | Retornar descrição geral do sensor |
 
 A requisição de número 3 representaria o envio da medida de temperatura, mas esse dado é enviado periodicamente pelo canal de comunicação UDP, portanto, ele não é recebido. 
 
 O radio disponibiliza os seguintes comandos para requisição do usuário pelo terminal:
 
-1. Conectar ao servidor;
-2. Desconectar do servidor;
-3. Ligar;
-4. Desligar;
-5. Consultar dados;
-6. Setar música;
-7. Tocar música;
-8. Pausar música.
+| Comando  | Descrição |
+| ------------- | ------------- |
+| 1  | Conectar ao servidor |
+| 2  | Desconectar do servidor |
+| 3  | Ligar |
+| 4  | Desligar |
+| 5  | Consultar dados |
+| 6  | Setar música |
+| 7  | Tocar música |
+| 8  | Pausar música |
 
 O protocolo para requisições vindas do broker é:
 
-0. Recebimento de envio periódico para manter a comunicação;
-1. Ligar radio;
-2. Desligar radio;
-3. Setar música;
-4. Tocar música;
-5. Pausar música;
-6. Retornar descrição geral do dispositivo.
+| Comando  | Descrição |
+| ------------- | ------------- |
+| 0  | Recebimento de envio periódico para manter a comunicação |
+| 1  | Ligar radio |
+| 2  | Desligar radio |
+| 3  | Setar música |
+| 4  | Tocar música |
+| 5  | Pausar música |
+| 6  | Retornar descrição geral do dispositivo |
 
 O retorno da descrição geral dos dispositivo é sempre o último comando do protocol, e o envio periódico de confirmação da conexão é sempre o comando 0. O restante dos comandos seguem a ordem que é exibida para o usuário quando ele solicita os comandos disponíveis. A descrição geral é uma opção fixa no menu da aplicação, por esse motivo, não fica na lista dos comandos disponíveis.
 
@@ -263,17 +270,14 @@ Os objetos das classes "Storage" e "Connection_server" são declarados no arquiv
 
 A pasta "api" contém o arquivo de declaração da estrutura da API RESTful. Ela é construído utilizando a biblioteca flask. A seguir, a descrição dos caminhos utilizados e seus respectivos métodos HTTP.
 
-* **/ (HEAD):** verificar se a API está operante. Retorna apenas o código de confirmação;
-
-* **/devices (GET):** retorna a lista de IDs dos dispositivos conectados ao broker;
-
-* **/devices/(ID do dispositivo)/commands/description (GET):** retorna a descrição dos comandos do dispositivo indicado;
-
-* **/devices/(ID do dispositivo)/commands/(comando) (GET):** envia comando de coleta de dados para ser repassado ao dispositivo indicado;
-
-* **/devices/(ID do dispositivo)/commands/(comando) (POST):** envia comando de mudança de estado para ser repassado ao dispositivo indicado;
-
-* **/devices/(ID do dispositivo)/commands/(comando)/(novo dado) (PATCH):** envia comando alteração de um dado específico do dispositivo indicado;
+| Caminho | Descrição | Método HTTP |         
+| ------------- | ------------- | ------------- |
+| **/** | verificar se a API está operante | HEAD |
+| **/devices**  | Retorna a lista de IDs dos dispositivos conectados ao broker | GET | 
+| **/devices/(ID_do_dispositivo)/commands/description** | Retorna a descrição dos comandos do dispositivo | GET |
+| **/devices/(ID_do_dispositivo)/commands/(comando)** | Envia comando de coleta de dados para o dispositivo | GET |
+| **/devices/(ID_do_dispositivo)/commands/(comando)** | Envia comando de mudança de estado para o dispositivo | POST |
+| **/devices/(ID_do_dispositivo)/commands/(comando)/(novo_dado)** | Envia comando alteração de um dado específico para o dispositivo | PATCH |
 
 Para todos os caminhos que envolvem os dispositivos, é validada a estabilidade da conexão entre o broker e eles antes de retornar os dados. Também, todos retornam mensagens de resposta, exceto, o primeiro caminho.
 
@@ -314,7 +318,7 @@ A aplicação de gerenciamento dos dispositivos é um programa simples de exibi�
 
 Os códigos de status padrão do protocolo HTTP são usados para verificar se a ação solicitada foi bem sucedida.
 
-As descrições dos comandos dos dispositivos, armazenadas no broker, são usados para saber informações pertinentes ao enviar um comando, como, a sua descrição, se ele necessita de uma entrada pra ser enviada em conjunto, ou qual o método HTTP relacionado a ele.
+As descrições dos comandos dos dispositivos, armazenadas no broker, são usadas para saber informações pertinentes ao enviar um comando, como, a sua descrição, se ele necessita de uma entrada para ser enviado em conjunto, ou qual o método HTTP relacionado a ele.
 
 </p>
 </div>
@@ -359,14 +363,14 @@ Faça o download do projeto por esse repositório no github. Os programas do pro
 
 **Execução direto**
 
-Método de execução direta através do terminal compilando o código em Python. No terminal do seu aparelho, acesse os seguintes endereços para executar as determinadas entidades:
+No terminal do seu aparelho, acesse os seguintes endereços para executar as determinadas entidades:
 
 * interfaces/device/exec/sensor : para executar o sensor de temperatura;
 * interfaces/device/exec/radio : para executar o radio;
 * interfaces/broker/exec : para executar o servidor broker;
 * interfaces/application : para executar a aplicação de gerenciamento.
 
-Após entrar nos endereços, execute o seguinte comando no terminal se o seu sistema operacional for Windows:
+Após entrar nos endereços, execute o seguinte comando no terminal, se o seu sistema operacional for Windows:
 
 	py __main__.py
 
@@ -376,7 +380,7 @@ Caso seja Linux, execute:
 
 **Construindo imagem e executando container**
 
-Método de execução utilizando a plataforma Docker para construir as imagens e executar os containers. 
+Método de execução utilizando a plataforma Docker. Realizando a contrução da imagem e executando o container. 
 
 Para executar o sensor, entre no endereço "interfaces/device" e execute os seguintes comandos:
 
@@ -393,14 +397,14 @@ Para executar o broker, entre no endereço "interfaces/broker" e execute:
 	docker build -t broker .
 	docker run -i --network host -e TERM=xterm broker
 
-Para executar a aplicação, entre no endereço "interfaces/application" e execute:
+E para executar a aplicação, entre no endereço "interfaces/application" e execute:
 
 	docker build -t app .
 	docker run -i --network host -e TERM=xterm app
 
-**Coletando imagem pelo Docker Hub**
+**Baixando imagem pelo Docker Hub**
 
-Ao invés de contruir a imagem, ela pode ser coletada pelo Docker Hub. 
+O método mais simples de execução é baixando a imagem da entidade no Docker Hub e executando o container realacionado.
 
 Para o sensor, usa-se os senguintes comandos:
 
