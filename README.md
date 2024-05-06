@@ -403,17 +403,22 @@ Ao invés de contruir a imagem, ela pode ser coletada pelo Docker Hub.
 Para o sensor, usa-se os senguintes comandos:
 
 	docker pull silviozv/sensor
-	docker run -i --network host -e TERM=xterm sensor
+	docker run -i --network host -e TERM=xterm silviozv/sensor
 
 Para o radio:
 
 	docker pull silviozv/radio
-	docker run -i --network host -e TERM=xterm radio
+	docker run -i --network host -e TERM=xterm silviozv/radio
 
-E para o broker:
+Para o broker:
 
 	docker pull silviozv/broker
-	docker run -i --network host -e TERM=xterm broker
+	docker run -i --network host -e TERM=xterm silviozv/broker
+
+E para a aplicação e de gerenciamento:
+
+	docker pull silviozv/app
+	docker run -i --network host -e TERM=xterm silviozv/app
 
 
 </p>
