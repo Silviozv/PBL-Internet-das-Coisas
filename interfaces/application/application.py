@@ -129,7 +129,6 @@ def process_option( info: dict) -> dict:
                     raise ValueError
 
                 url = (f"http://{server_ip}:5070/")
-                print("\n  Aguardando resposta do servidor...")
                 response_code = requests.head(url, timeout=7).status_code
 
                 if ( response_code == 200):
@@ -158,7 +157,6 @@ def process_option( info: dict) -> dict:
         try:
             if ( info['Opção'] == '1'):
                 url = (f"http://{info['IP servidor']}:5070/devices")
-                print("\n  Aguardando resposta do servidor...")
                 devices_ip = requests.get(url, timeout=7).json()
 
                 if (len(devices_ip) == 0):
@@ -175,7 +173,6 @@ def process_option( info: dict) -> dict:
                 if (not(re.match(r'^DE\d+', device_id))):
                     raise ValueError
 
-                print("\n  Aguardando resposta do servidor...")
                 url = (f"http://{info['IP servidor']}:5070/devices")
                 devices_id = requests.get(url, timeout=7).json()
 
@@ -213,7 +210,6 @@ def process_option( info: dict) -> dict:
         try:
             if ( info['Opção'] == '1'):
                 url = (f"http://{info['IP servidor']}:5070/devices/{info['ID dispositivo']}/commands/description")
-                print("\n  Aguardando resposta do servidor...")
                 response = requests.get(url, timeout=7)
                 
                 if ( response.status_code == 404):
@@ -234,7 +230,6 @@ def process_option( info: dict) -> dict:
             
             elif ( info['Opção'] == '2'):
                 url = (f"http://{info['IP servidor']}:5070/devices/{info['ID dispositivo']}/commands/description")
-                print("\n  Aguardando resposta do servidor...")
                 response = requests.get(url, timeout=7)
 
                 if ( response.status_code == 404):
@@ -275,17 +270,14 @@ def process_option( info: dict) -> dict:
 
                     elif ( commands_description[command]['Método HTTP'] == 'GET'):
                         url = (f"http://{info['IP servidor']}:5070/devices/{info['ID dispositivo']}/commands/{command}")
-                        print("\n  Aguardando resposta do servidor...")
                         response = requests.get(url, timeout=7).json()
 
                     elif (commands_description[command]['Método HTTP'] == 'POST'):
                         url = (f"http://{info['IP servidor']}:5070/devices/{info['ID dispositivo']}/commands/{command}")
-                        print("\n  Aguardando resposta do servidor...")
                         response = requests.post(url, timeout=7).json()
 
                     elif ( commands_description[command]['Método HTTP'] == 'PATCH'):
                         new_data = input(f"  {commands_description[command]['Entrada']}: ").strip()
-                        print("\n  Aguardando resposta do servidor...")
                         url = (f"http://{info['IP servidor']}:5070/devices/{info['ID dispositivo']}/commands/{command}/{new_data}")
                         response = requests.patch(url, timeout=7).json()
 
