@@ -182,12 +182,14 @@ A pasta "impl" contém os arquivos com a lógica de implementação dos disposit
 
 O sensor de temperatura possui os seguintes comandos para gerenciamento pelo próprio terminal:
 
-1. Conectar ao servidor;
-2. Desconectar do servidor;
-3. Ligar;
-4. Desligar;
-5. Consultar dados;
-6. Setar temperatura.
+| Comando  | Descrição |
+| ------------- | ------------- |
+| 1  | Conectar ao servidor  |
+| 2  | Desconectar do servidor  |
+| 3  | Ligar  |
+| 4  | Desligar  |
+| 5  | Consultar dados  |
+| 6  | Setar temperatura  |
 
 Para o recebimento de requisições do broker, é seguido o seguinte protocolo:
 
