@@ -15,17 +15,17 @@ No intuito de auxiliar a inserção de novos dispositivos nas inovações atuais
 
 A seguir, as requisições dos softwares criados e as suas especificações:
 
-* Dispositivo vitual:
+* **Dispositivo vitual:**
 	* Criação de um ou mais softwares, em qualquer linguagem de programação, para simulação de dispositivos capazes de desempenhar funcionalidades e gerar dados fictícios de retorno;
 	* Deve-se utilizar um protocolo baseado em conexão (TCP) para lidar com comandos de gerenciamento, e um protocolo sem conexão (UDP) para envio de dados; 
 	* Implementação de uma interface via terminal para inserção de parâmetros de gerenciamento e setagem de dados.
 	* A comunicação deve ser baseada em conexões socket, sendo elas, conexões que seguem o protocolo de rede TCP/TP.
 
-* Broker:
+* **Broker:**
 	* Implementação de um servidor intermediário entre as aplicações e os dispositivos, com base no serviço API RESTful;
 	* Podem ser usados frameworks de construção da API RESTful para a comunicação entre o servidor broker e a aplicação.
 
-* Aplicação de gerenciamento:
+* **Aplicação de gerenciamento:**
 	* Criação de uma aplicação com interface, gráfica ou não, que permite a conexão com dispositivos, por intermédio do servidor broker, para enviar comandos e solicitar requisições.
 
 </p>
@@ -41,6 +41,11 @@ A seguir, as requisições dos softwares criados e as suas especificações:
 		<li><a href="#descricaoSoftwares"> Descrição dos principais softwares utilizados </a></li>
 		<li><a href="#arquiteturaSolucao"> Arquitetura da solução </a></li>
 		<li><a href="#dispositivos"> Dispositivos </a> </li>
+		<li><a href="#broker"> Broker </a> </li>
+		<li><a href="#tratamentoConcorrencia"> Tratamento de concorrência entre threads </a> </li>
+		<li><a href="#aplicacaoGerenciamento"> Aplicação de gerenciamento </a> </li>
+		<li><a href="#formatoMensagens"> Formato das mensagens </a> </li>
+		<li><a href="#interfacesTerminal"> Interfaces no terminal </a> </li>
 		<li><a href="#referencias"> Referências </a> </li>
 	</ul>	
 </div>
@@ -161,15 +166,15 @@ Com a conexão do dispositivo e do broker estabelecida, é possível fazer o int
 
 <p align="justify"> 
 
-Foram feitas as bases de dois dispositivos, sendo eles, um sensor de temperatura e um aparelho de som via internet, que no projeto é referenciado como um radio. A seguir, serão descritos os módulos dessas entidades, presentes no diretório "dispositivos", e as suas funcionalidades.
+Foram feitas as bases de dois dispositivos, sendo eles, um sensor de temperatura e um aparelho de som via internet, que no projeto é referenciado como um radio. A seguir, serão descritos os módulos dessas entidades, presentes no diretório "device", e as suas funcionalidades.
 
 **model**
 
 A pasta "model" contém a estrutura das classes usadas no projeto. Foram feitas três classes, uma para cada dispositivo e outra representando a conexão com o servidor. Os arquivos contendo essas estruturas são:
 
-* Connection_device: contém a classe da conexão com o servidor. Na sua inicialização são setadas as portas 5050, para o canal de comunicação TCP, e 5060, para o canal UDP. Os dados necessários para realizar a conexão futura com o servidor são setados. Os seus métodos consistem na inicialização e encerramento da conexão com o servidor, e o *loop* de reconexão, caso haja problemas na comunicação.
+* **Connection_device:** contém a classe da conexão com o servidor. Na sua inicialização são setadas as portas 5050, para o canal de comunicação TCP, e 5060, para o canal UDP. Os dados necessários para realizar a conexão futura com o servidor são setados. Os seus métodos consistem na inicialização e encerramento da conexão com o servidor, e o *loop* de reconexão, caso haja problemas na comunicação.
 
-* Sensor e Radio: contém as classes que representam o sensor de temperatura e o aparelho de som via internet, respectivamente. Na sua inicialização são setadas as informações básicas do dispositivo. Seus métodos consistem no retorno e setagem de dados, e na execução de comandos vindos do broker ou do próprio dispositivo;
+* **Sensor e Radio:** contém as classes que representam o sensor de temperatura e o aparelho de som via internet, respectivamente. Na sua inicialização são setadas as informações básicas do dispositivo. Seus métodos consistem no retorno e setagem de dados, e na execução de comandos vindos do broker ou do próprio dispositivo;
 
 **impl**
 
@@ -225,6 +230,118 @@ A pasta "exec" contém a execução dos programas dos dispositivos, feita, espec
 Para o sensor de temperatura são chamadas três funções, sendo elas: o *loop* de recebimento das requisições do servidor, o envio periódico de dados pelo canal de comunicação UDP, e a exibição do menu de gerenciamento do dispositivo. Os dois primeiros são executados em *threads* separadas, portanto as três funções executam paralelamente.
 
 O radio segue a mesma lógica de execução do sensor, com exceção do envio periódico de dados pelo canal de comunicação UDP, que não é implementado por ele.
+
+</p>
+</div>
+
+
+
+<div id="broker"> <h2> Broker </h2>
+
+<p align="justify"> 
+
+O servidor broker possui a mesma estrutura de arquivo dos dispositivos, com a adição de uma pasta contendo a declaração da API. Todas as informações estão presentes no diretório "broker". A seguir, a descrição dos módulos.
+
+**model**
+
+A pasta "model" contém dois arquivos com duas classes necessárias para o funcionamento do broker. Sendo elas:
+
+* **Connection_server:** classe que representa a conexão do broker com a rede de comunicação. São setados os objetos de comunicação e é coletado o IP local da máquina que está executando;
+* **Storage:** classe de declaração das estruturas de armazenamento. Armazena dados, como, o ID dos dispositivos conectados, os seus respectivos objetos utilizados para fazer a comunicação, a descrição dos seus comandos, e *flags* de controle de concorrência entre *threads*.
+
+**impl**
+
+A pasta "impl" contém o arquivo com a lógica de implementação do servidor broker. Suas funções incluem funcionalidades de: receber novas conexões e armazená-las; enviar comandos periódicos de validação de comunicação para os dispositivos; recebimento de dados via canal de comunicação UDP; coleta de dados armazenados; e envio de comandos para dispositivos.
+
+Há uma função para enviar as mensagens de validação da comunicação em *loop*, e outra para fazer um único envio quando for chamada. A de envio único é utilizada nas chamadas da API.
+
+Os objetos das classes "Storage" e "Connection_server" são declarados no arquivo de implementação para todas as funções terem acesso a eles.
+
+**api**
+
+A pasta "api" contém o arquivo de declaração da estrutura da API RESTful. Ela é construído utilizando a biblioteca flask. A seguir, a descrição dos caminhos utilizados e seus respectivos métodos HTTP.
+
+* **/ (HEAD):** verificar se a API está operante. Retorna apenas o código de confirmação;
+
+* **/devices (GET):** retorna a lista de IDs dos dispositivos conectados ao broker;
+
+* **/devices/(ID do dispositivo)/commands/description (GET):** retorna a descrição dos comandos do dispositivo indicado;
+
+* **/devices/(ID do dispositivo)/commands/(comando) (GET):** envia comando de coleta de dados para ser repassado ao dispositivo indicado;
+
+* **/devices/(ID do dispositivo)/commands/(comando) (POST):** envia comando de mudança de estado para ser repassado ao dispositivo indicado;
+
+* **/devices/(ID do dispositivo)/commands/(comando)/(novo dado) (PATCH):** envia comando alteração de um dado específico do dispositivo indicado;
+
+Para todos os caminhos que envolvem os dispositivos, é validada a estabilidade da conexão entre o broker e eles antes de retornar os dados. Também, todos retornam mensagens de resposta, exceto, o primeiro caminho.
+
+O arquivo também contém uma função de inicialização da API, utilizando a porta de rede 5070.
+
+**exec**
+
+A pasta "exec" contém a execução do broker, especificamente, no arquivo \__main__. São executadas três funções para iniciar o broker, sendo elas: o recebimento de novas conexões via canal de comunicação TCP; o recebimento de dados via canal UDP; e a inicialização da API. As duas primeiras são executas em *threads* separadas.
+
+Quando uma conexão é iniciada, é realizado o processo de envio do ID setado para o dispositivo e o recebimento das descrições dos seus comandos de gerenciamento. Depois disso, em uma *thread* separada, é feito o envio periódico das mensagem de validação para manter a conexão aberta. Assim, é aberta uma nova *thread* para cada dispositivo conectado.
+
+</p>
+</div>
+
+
+
+<div id="tratamentoConcorrencia"> <h2> Tratamento de concorrência entre threads </h2>
+
+<p align="justify"> 
+
+Na implementação do broker, casos de concorrência entre *threads* tiveram que ser tratados. Esse casos podem ocorrer pelo fato de mais de uma *thread* querer utilizar os objetos socket de comunicação para enviar e receber dados do dispositivo ao mesmo tempo. Nessa situação, funções podem receber dados que não eram destinados para elas. 
+
+Os objetos socket podem ser usados em três execuções diferentes: o envio de mensagens periodicamente para manter a comunicação; o envio de mensagem única para validar a comunicação; e o envio de um comando requisitado pela aplicação.
+
+Para evitar o uso simultâneo dessas ferramentas, para cada dispositivo foi declarada uma *flag* de controle, que indica quando o objeto da comunicação está sendo usado. Caso uma função queira acessar o objeto, ela espera a *flag* liberar o uso para utilizá-lo.
+
+
+</p>
+</div>
+
+
+
+<div id="aplicacaoGerenciamento"> <h2> Aplicação de Gerenciamento </h2>
+
+<p align="justify"> 
+
+A aplicação de gerenciamento dos dispositivos é um programa simples de exibição de menu para selecionar opções. As suas funcionalidades incluem a inserção do IP do servidor broker, a consulta dos IDs dos dispositivos conectados, a seleção de um dispositivo a partir do ID e o seu gerenciamento. As chamadas da API são feitas com o uso da biblioteca requests.
+
+Os códigos de status padrão do protocolo HTTP são usados para verificar se a ação solicitada foi bem sucedida.
+
+As descrições dos comandos dos dispositivos, armazenadas no broker, são usados para saber informações pertinentes ao enviar um comando, como, a sua descrição, se ele necessita de uma entrada pra ser enviada em conjunto, ou qual o método HTTP relacionado a ele.
+
+</p>
+</div>
+
+
+
+<div id="formatoMensagens"> <h2> Formato das Mensagens </h2>
+
+<p align="justify"> 
+
+O sistema utiliza padrões fixos para o formato das mensagens de requisição transmitidas.
+
+O servidor broker envia requisições para o dispositivo, solicitadas pela aplicação, em forma de dicionário. Uma chave, com o nome "Comando", referencia o comando que foi solicitado, e caso o comando deva ser enviado com algum outro dado, a chave "Entrada" indica o conteúdo a ser enviado.
+
+O dispositivo recebe essa mensagem de requisição do broker e retorna a resposta para a ação pedida. O conteúdo dessa mensagem de retorno também é um dicionário, que possui apenas uma chave, com o nome de "Resposta". O conteúdo que essa chave referencia pode ser uma string ou outro dicionário, necessitanto que a aplicação identifique o formato do conteúdo para exibir devidamente ao usuário. Em casos de coleta de dados via canal de comunicação UDP, o broker formata a mensagem da mesma maneira.
+
+</p>
+</div>
+
+
+
+<div id="interfacesTerminal"> <h2> Interfaces no Terminal </h2>
+
+<p align="justify"> 
+
+A seguir, as interfaces exibidas ao usuário para gerenciar os softwares do projeto.
+
+**Broker**
+
 
 
 </p>
