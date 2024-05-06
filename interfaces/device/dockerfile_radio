@@ -1,0 +1,6 @@
+FROM python:3.12-slim
+WORKDIR /device
+EXPOSE 5050/tcp
+COPY . .
+CMD ["python", "exec/radio/__main__.py"]
+
