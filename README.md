@@ -95,7 +95,7 @@ O programa Insomnia foi usado para testar as rotas da API RESTful sem precisar d
 A estrutura geral do projeto é representada pela comunicação entre as três entidades do sistema, sendo elas: o servidor broker, o dispositivo e a aplicação de gerenciamento do usuário. O número de dispositivos e aplicações podem variar, somente o servidor broker é único para aquela determinada comunicação de rede. Assim, seguindo as indicações de protocolo das requisições, o sistema de rede segue a seguinte estrutura:
 
 <p align="center">
-  <img src="images/image1.jpeg" width = "800" />
+  <img src="images/image1.jpeg" width = "600" />
 </p>
 <p align="center"><strong> Estrutura geral do sistema </strong> </p>
 
@@ -112,7 +112,7 @@ O dispositivo é a entidade que inicia a conexão com o broker, utilizando o can
 Os passos citados são representados no diagrama abaixo:
 
 <p align="center">
-  <img src="images/image2.jpeg" width = "800" />
+  <img src="images/image2.jpeg" width = "600" />
 </p>
 <p align="center"><strong> Iníciando conexão entre o dispositivo e o broker </strong> </p>
 
@@ -125,7 +125,7 @@ No caso de erro de conexão, o dispositivo inicia o processo de reconexão. Isso
 O caso de desconexão citado está sendo mostrado no diagrama abaixo:
 
 <p align="center">
-  <img src="images/image3.jpeg" width = "800" />
+  <img src="images/image3.jpeg" width = "600" />
 </p>
 <p align="center"><strong> Reconexão entre o dispositivo e o broker </strong> </p>
 
@@ -146,14 +146,14 @@ Com a conexão do dispositivo e do broker estabelecida, é possível fazer o int
 * O protocolo TCP é usado para conexões fixas que necessitam de uma lógica de envio e recebimento de dados envolvendo as duas extremidades da comunicação. Por esse motivo, ele foi usado para o envio de comandos de gerencimanto, em que, a aplicação envia um comando, pelo broker, para o dispositivo executar alguma ação, e é esperada uma resposta do resultado dessa ação. A sequência de mensagens desse caso é descrita no diagrama abaixo:
 
 <p align="center">
-  <img src="images/image4.jpeg" width = "800" />
+  <img src="images/image4.jpeg" width = "600" />
 </p>
 <p align="center"><strong> Envio de comandos de gerenciamento </strong> </p>
 
 * O protocolo UDP não é orientado a uma conexão fixa, ou seja, não possui estrutura dependente de retorno ao enviar um dado. Assim, ele foi usado para envio de dados de sensoriamento, do dispositivo para o broker, que não necessitam de uma garantia de chegada ao destino. Nesse caso, a aplicação envia comandos relacionados a coleta de dados transmitidos via canal UDP, e o dispositivo não precisa saber que esses dados foram requisitados, já que o broker já está recebendo-os. O diagrama abaixo mostra essa situação: 
 
 <p align="center">
-  <img src="images/image5.jpeg" width = "800" />
+  <img src="images/image5.jpeg" width = "600" />
 </p>
 <p align="center"><strong> Envio de requisição de dados </strong> </p>
 
@@ -220,12 +220,12 @@ O radio segue a mesma lógica de execução do sensor, com exceção do envio pe
 Para o gerenciamento do dispositivo em seu próprio terminal, são exibidos fixamente os comandos disponíveis e informações, na parte inferior, relacionadas a situação atual ou ás opções que foram inseridas. As imagens abaixo mostram as telas de inicialização do sensor e do radio.
 
 <p align="center">
-  <img src="images/image7.jpeg" width = "800" />
+  <img src="images/image7.jpeg" width = "600" />
 </p>
 <p align="center"><strong> Tela inicial do sensor de temperatura </strong> </p>
 
 <p align="center">
-  <img src="images/image8.jpeg" width = "800" />
+  <img src="images/image8.jpeg" width = "600" />
 </p>
 <p align="center"><strong> Tela inicial do radio </strong> </p>
 
@@ -234,7 +234,7 @@ A opção 1 é usada para conectar o servidor, sendo necessário inserir o seu I
 Todos os casos retornam uma mensagem na parte inferior informando o resultado da opção inserida, exceto a opção de "Consultar dados", que retorna informações relacionados ao dispositivo. Exemplos de exibição são mostrados nas imagens abaixo.
 
 <p align="center">
-  <img src="images/image9.jpeg" width = "800" />
+  <img src="images/image9.jpeg" width = "600" />
 </p>
 <p align="center"><strong> Retorno da opção de consultar dados do sensor </strong> </p>
 
@@ -242,7 +242,7 @@ Todos os casos retornam uma mensagem na parte inferior informando o resultado da
 </div>
 
 <p align="center">
-  <img src="images/image10.jpeg" width = "800" />
+  <img src="images/image10.jpeg" width = "600" />
 </p>
 <p align="center"><strong> Retorno da opção de consultar dados do radio </strong> </p>
 
