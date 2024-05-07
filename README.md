@@ -338,17 +338,17 @@ As descrições dos comandos dos dispositivos, armazenadas no broker, são usada
 Abaixo estão as telas de exibição da aplicação de gerenciamento. Primeiramente, é mostrada a opção de selecionar o servidor, após ser selecionado, é possível consultar os dispositivos conectados e indicar um deles para gerenciar. As mensagens de resposta para o usuário são exibidas na parte inferior do menu.
 
 <p align="center">
-  <img src="images/image11.jpeg" width = "400" />
+  <img src="images/image11.jpeg" width = "600" />
 </p>
 <p align="center"><strong> Tela inicial da aplicação </strong> </p>
 
 <p align="center">
-  <img src="images/image12.jpeg" width = "400" />
+  <img src="images/image12.jpeg" width = "600" />
 </p>
 <p align="center"><strong> Tela após selecionar o servidor </strong> </p>
 
 <p align="center">
-  <img src="images/image13.jpeg" width = "400" />
+  <img src="images/image13.jpeg" width = "600" />
 </p>
 <p align="center"><strong> Tela após selecionar o dispositivo  </strong> </p>
 
