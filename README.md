@@ -44,7 +44,6 @@ A seguir, as requisições dos softwares criados e as suas especificações:
 		<li><a href="#tratamentoConcorrencia"> Tratamento de concorrência entre threads </a> </li>
 		<li><a href="#aplicacaoGerenciamento"> Aplicação de gerenciamento </a> </li>
 		<li><a href="#formatoMensagens"> Formato das mensagens </a> </li>
-		<li><a href="#interfacesTerminal"> Interfaces no terminal </a> </li>
 		<li><a href="#execucao"> Execução </a> </li>
 		<li><a href="#conclusao">Conclusão </a> </li>
 		<li><a href="#referencias"> Referências </a> </li>
@@ -167,7 +166,7 @@ Com a conexão do dispositivo e do broker estabelecida, é possível fazer o int
 
 <p align="justify"> 
 
-Foram feitas as bases de dois dispositivos, sendo eles, um sensor de temperatura e um aparelho de som via internet, que no projeto é referenciado como um radio. A seguir, serão descritos os módulos dessas entidades, presentes no diretório "device", e as suas funcionalidades.
+Foram feitas as bases de dois dispositivos, sendo eles, um sensor de temperatura e um aparelho de som via internet, que no projeto é referenciado como um radio. A seguir, serão descritos os módulos e as interfaces dessas entidades, que estão presentes no diretório "device".
 
 **model**
 
@@ -181,46 +180,22 @@ A pasta "model" contém a estrutura das classes usadas no projeto. Foram feitas 
 
 A pasta "impl" contém os arquivos com a lógica de implementação dos dispositivos. Estão inclusas as funções de exibição do menu para gerenciar comandos pelo próprio dispositivo e do recebimento de requisições do servidor, se estiver conectado.
 
-O sensor de temperatura possui os seguintes comandos para gerenciamento pelo próprio terminal:
+O sensor de temperatura possui o seguinte protocolo de requisições que podem ser recebidas através de envios do broker:
 
 | Comando  | Descrição |
 | ------------- | ------------- |
-| 1  | Conectar ao servidor  |
-| 2  | Desconectar do servidor  |
-| 3  | Ligar  |
-| 4  | Desligar  |
-| 5  | Consultar dados  |
-| 6  | Setar temperatura  |
-
-Para o recebimento de requisições do broker, é seguido o seguinte protocolo:
-
-| Comando  | Descrição |
-| ------------- | ------------- |
-| 0  | Recebimento de envio periódico para manter a comunicação |
+| 0  | Confirmar validade da comunicação |
 | 1  | Ligar sensor |
 | 2  | Desligar sensor |
 | 4  | Retornar descrição geral do sensor |
 
 A requisição de número 3 representaria o envio da medida de temperatura, mas esse dado é enviado periodicamente pelo canal de comunicação UDP, portanto, ele não é recebido. 
 
-O radio disponibiliza os seguintes comandos para requisição do usuário pelo terminal:
+O protocolo de requisições do radio, de mensagens vindas do broker, são:
 
 | Comando  | Descrição |
 | ------------- | ------------- |
-| 1  | Conectar ao servidor |
-| 2  | Desconectar do servidor |
-| 3  | Ligar |
-| 4  | Desligar |
-| 5  | Consultar dados |
-| 6  | Setar música |
-| 7  | Tocar música |
-| 8  | Pausar música |
-
-O protocolo para requisições vindas do broker é:
-
-| Comando  | Descrição |
-| ------------- | ------------- |
-| 0  | Recebimento de envio periódico para manter a comunicação |
+| 0  | Confirmar validade da comunicação |
 | 1  | Ligar radio |
 | 2  | Desligar radio |
 | 3  | Setar música |
@@ -228,9 +203,9 @@ O protocolo para requisições vindas do broker é:
 | 5  | Pausar música |
 | 6  | Retornar descrição geral do dispositivo |
 
-O retorno da descrição geral dos dispositivo é sempre o último comando do protocol, e o envio periódico de confirmação da conexão é sempre o comando 0. O restante dos comandos seguem a ordem que é exibida para o usuário quando ele solicita os comandos disponíveis. A descrição geral é uma opção fixa no menu da aplicação, por esse motivo, não fica na lista dos comandos disponíveis.
+O retorno da descrição geral dos dispositivo é sempre o último comando do protocolo, e o envio de confirmação da conexão é sempre o comando 0. O restante dos comandos seguem a ordem que é exibida para o usuário, que utiliza a aplicação de gerenciamento, quando ele solicita os comandos disponíveis. A descrição geral é uma opção fixa no menu da aplicação, por esse motivo, não fica na lista dos comandos disponíveis.
 
-Diferentemente do sensor, o radio não possui uma função para envio periódico de dados via canal de comunicação UDP. Ao invés disso, a aplicação pode setar uma música específica para ser setada, desempenhando o papel de um atuante.
+Diferentemente do sensor, o radio não possui uma função para envio periódico de dados via canal de comunicação UDP. Ao invés disso, a aplicação pode setar uma música específica para ser setada, desempenhando o papel de um dispositivo atuante.
 
 **exec**
 
@@ -240,16 +215,45 @@ Para o sensor de temperatura são chamadas três funções, sendo elas: o *loop*
 
 O radio segue a mesma lógica de execução do sensor, com exceção do envio periódico de dados pelo canal de comunicação UDP, que não é implementado por ele.
 
+**Interface de exibição**
+
+Para o gerenciamento do dispositivo em seu próprio terminal, são exibidos fixamente os comandos disponíveis e informações, na parte inferior, relacionadas a situação atual ou ás opções que foram inseridas. As imagens abaixo mostram as telas de inicialização do sensor e do radio.
+
+<p align="center">
+  <img src="images/image7.jpeg" width = "800" />
+</p>
+<p align="center"><strong> Tela inicial do sensor de temperatura </strong> </p>
+
+<p align="center">
+  <img src="images/image8.jpeg" width = "800" />
+</p>
+<p align="center"><strong> Tela inicial do radio </strong> </p>
+
+A opção 1 é usada para conectar o servidor, sendo necessário inserir o seu IP, e a opção 2 faz a sua deconexão. As demais são relacionados ao gerenciamento dos dispositivos. 
+
+Todos os casos retornam uma mensagem na parte inferior informando o resultado da opção inserida, exceto a opção de "Consultar dados", que retorna informações relacionados ao dispositivo. Exemplos de exibição são mostrados nas imagens abaixo.
+
+<p align="center">
+  <img src="images/image9.jpeg" width = "800" />
+</p>
+<p align="center"><strong> Retorno da opção de consultar dados do sensor </strong> </p>
+
 </p>
 </div>
 
+<p align="center">
+  <img src="images/image10.jpeg" width = "800" />
+</p>
+<p align="center"><strong> Retorno da opção de consultar dados do radio </strong> </p>
 
+</p>
+</div>
 
 <div id="broker"> <h2> Broker </h2>
 
 <p align="justify"> 
 
-O servidor broker possui a mesma estrutura de arquivo dos dispositivos, com a adição de uma pasta contendo a declaração da API. Todas as informações estão presentes no diretório "broker". A seguir, a descrição dos módulos.
+O servidor broker possui a mesma estrutura de arquivo dos dispositivos, com a adição de uma pasta contendo a declaração da API. Todas as informações estão presentes no diretório "broker". A seguir, a descrição dos módulos e da interface.
 
 **model**
 
@@ -289,6 +293,15 @@ A pasta "exec" contém a execução do broker, especificamente, no arquivo \__ma
 
 Quando uma conexão é iniciada, é realizado o processo de envio do ID setado para o dispositivo e o recebimento das descrições dos seus comandos de gerenciamento. Depois disso, em uma *thread* separada, é feito o envio periódico das mensagem de validação para manter a conexão aberta. Assim, é aberta uma nova *thread* para cada dispositivo conectado.
 
+**Interface de exibição**
+
+Ao iniciar o servidor broker, é exibido o IP que deve ser usado para conexão de outras entidades e a declaração da API RESTful, como mostrado na imagem abaixo.
+
+<p align="center">
+  <img src="images/image6.jpeg" width = "400" />
+</p>
+<p align="center"><strong> Retorno da opção de consultar dados do radio </strong> </p>
+
 </p>
 </div>
 
@@ -320,6 +333,10 @@ Os códigos de status padrão do protocolo HTTP são usados para verificar se a 
 
 As descrições dos comandos dos dispositivos, armazenadas no broker, são usadas para saber informações pertinentes ao enviar um comando, como, a sua descrição, se ele necessita de uma entrada para ser enviado em conjunto, ou qual o método HTTP relacionado a ele.
 
+**Interface de exibição**
+
+
+
 </p>
 </div>
 
@@ -334,21 +351,6 @@ O sistema utiliza padrões fixos para o formato das mensagens de requisição tr
 O servidor broker envia requisições para o dispositivo, solicitadas pela aplicação, em forma de dicionário. Uma chave, com o nome "Comando", referencia o comando que foi solicitado, e caso o comando deva ser enviado com algum outro dado, a chave "Entrada" indica o conteúdo a ser enviado.
 
 O dispositivo recebe essa mensagem de requisição do broker e retorna a resposta para a ação pedida. O conteúdo dessa mensagem de retorno também é um dicionário, que possui apenas uma chave, com o nome de "Resposta". O conteúdo que essa chave referencia pode ser uma string ou outro dicionário, necessitanto que a aplicação identifique o formato do conteúdo para exibir devidamente ao usuário. Em casos de coleta de dados via canal de comunicação UDP, o broker formata a mensagem da mesma maneira.
-
-</p>
-</div>
-
-
-
-<div id="interfacesTerminal"> <h2> Interfaces no Terminal </h2>
-
-<p align="justify"> 
-
-A seguir, as interfaces exibidas ao usuário para gerenciar os softwares do projeto.
-
-**Broker**
-
-
 
 </p>
 </div>
