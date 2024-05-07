@@ -300,7 +300,7 @@ Ao iniciar o servidor broker, é exibido o IP que deve ser usado para conexão d
 <p align="center">
   <img src="images/image6.jpeg" width = "400" />
 </p>
-<p align="center"><strong> Retorno da opção de consultar dados do radio </strong> </p>
+<p align="center"><strong> Exibição do servidor broker </strong> </p>
 
 </p>
 </div>
@@ -311,7 +311,7 @@ Ao iniciar o servidor broker, é exibido o IP que deve ser usado para conexão d
 
 <p align="justify"> 
 
-Na implementação do broker, casos de concorrência entre *threads* tiveram que ser tratados. Esse casos podem ocorrer pelo fato de mais de uma *thread* querer utilizar os objetos socket de comunicação para enviar e receber dados do dispositivo ao mesmo tempo. Nessa situação, funções podem receber dados que não eram destinados para elas. 
+Na implementação do broker, casos de concorrência entre *threads* tiveram que ser tratados. Esses casos podem ocorrer pelo fato de mais de uma *thread* querer utilizar os objetos socket de comunicação para enviar e receber dados do dispositivo ao mesmo tempo. Nessa situação, funções podem receber dados que não eram destinados para elas. 
 
 Os objetos socket podem ser usados em três execuções diferentes: o envio de mensagens periodicamente para manter a comunicação; o envio de mensagem única para validar a comunicação; e o envio de um comando requisitado pela aplicação.
 
@@ -335,7 +335,22 @@ As descrições dos comandos dos dispositivos, armazenadas no broker, são usada
 
 **Interface de exibição**
 
+Abaixo estão as telas de exibição da aplicação de gerenciamento. Primeiramente, é mostrada a opção de selecionar o servidor, após ser selecionado, é possível consultar os dispositivos conectados e indicar um deles para gerenciar. As mensagens de resposta para o usuário são exibidas na parte inferior do menu.
 
+<p align="center">
+  <img src="images/image11.jpeg" width = "400" />
+</p>
+<p align="center"><strong> Tela inicial da aplicação </strong> </p>
+
+<p align="center">
+  <img src="images/image12.jpeg" width = "400" />
+</p>
+<p align="center"><strong> Tela após selecionar o servidor </strong> </p>
+
+<p align="center">
+  <img src="images/image13.jpeg" width = "400" />
+</p>
+<p align="center"><strong> Tela após selecionar o dispositivo  </strong> </p>
 
 </p>
 </div>
