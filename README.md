@@ -21,7 +21,7 @@ A seguir, as requisições dos softwares criados e as suas especificações:
 	* A comunicação deve ser baseada em conexões socket, sendo elas, conexões que seguem o protocolo de rede TCP/TP.
 
 * **Broker:**
-	* Implementação de um servidor intermediário entre as aplicações e os dispositivos, com base no serviço API RESTful;
+	* Implementação de um servidor intermediário entre as aplicações e os dispositivos, com base em interface  API RESTful;
 	* Podem ser usados frameworks de construção da API RESTful para a comunicação entre o servidor broker e a aplicação.
 
 * **Aplicação de gerenciamento:**
@@ -73,7 +73,7 @@ A biblioteca Flask em Python foi utilizada para implementar a API RESTful do ser
 
 **Biblioteca Requests**
 
-Como a API do tipo RESTful segue o procolo de comunicação HTTP, foi usada a biblioteca requests para acessar, a partir de um arquivo Python, os endereços com seus métodos devidamente indicados.
+Como a API do tipo RESTful segue o procolo de comunicação HTTP, foi usada a biblioteca requests para acessar os endereços com seus métodos devidamente indicados.
 
 **Docker**
 
@@ -99,11 +99,13 @@ A estrutura geral do projeto é representada pela comunicação entre as três e
 </p>
 <p align="center"><strong> Estrutura geral do sistema </strong> </p>
 
+A seguir, as especificações de comunicação entre as três entidades.
+
 ### Processo de conexão: dispositivo e broker
 
 O dispositivo é a entidade que inicia a conexão com o broker, utilizando o canal de comunicação TCP. Esse processo segue os seguintes passos:
 
-1. Dispositivo envia o sinal de início de conexão do socket, para o broker aceitar; 
+1. Dispositivo envia o sinal de início de conexão, do socket, para o broker aceitar; 
 2. Dispositivo envia uma mensagem indicando que o intuito da conexão é criar uma comunicação fixa com o broker;
 3. Broker envia o ID que foi setado para o dispositivo;
 4. Dispositivo envia a descrição dos seus comandos;
@@ -116,7 +118,7 @@ Os passos citados são representados no diagrama abaixo:
 </p>
 <p align="center"><strong> Iníciando conexão entre o dispositivo e o broker </strong> </p>
 
-Para manter a conexão entre o dispositivo e o broker, foi implementado um sistema de confirmação periódica. Foi setado, para os dois objetos socket das extremidades da comunicação, um intervalo limite de 5 segundos para receber respostas. 
+Para manter a conexão entre o dispositivo e o broker, foi implementado um sistema de confirmação periódica. Isso foi feito setando para os dois objetos socket, das extremidades da comunicação, um intervalo limite de 5 segundos para receber respostas. 
 
 O dispositivo espera por alguma mensagem a todo momento, e o broker envia a cada 3 segundos comandos de confirmação de conexão. Se o dispositivo não receber nada no intervalo limite, ocorreu um erro de conexão.
 
@@ -129,28 +131,28 @@ O caso de desconexão citado está sendo mostrado no diagrama abaixo:
 </p>
 <p align="center"><strong> Reconexão entre o dispositivo e o broker </strong> </p>
 
-O dispositivo pode desfazer da conexão se for requerido pelo usuário. O broker saberia que o canal de comunicação foi encerrado, e, em seguida, descartaria a conexão da mesma forma.
+O dispositivo pode desfazer a conexão se for pelo seu gerenciamento interno. O broker saberia que o canal de comunicação foi encerrado, e, em seguida, descartaria a conexão da mesma forma.
 
 ### Processo de conexão: broker e aplicação
 
 A aplicação de gerenciamento se comunica com o broker através de chamadas da biblioteca requests, assim, não é preciso manter uma conexão fixa. 
 
-Para enviar comandos a algum dispositivo conectado, é preciso saber previamente informações de envio, como, se é necessário a entrada de um novo dado, ou não, e qual método HTTP deve ser usado na chamada. Por esse motivo, o dispositivo envia a descrição dos seus comandos quando inicia a conexão com o broker, como foi citado anteriormente. 
+Para enviar comandos a algum dispositivo conectado, é preciso saber previamente informações de envio, como, se é necessário a entrada de um novo dado, e qual método HTTP deve ser usado na chamada. Por esse motivo, o dispositivo envia a descrição dos seus comandos quando inicia a conexão com o broker, como foi citado anteriormente. 
 
 Dessa forma, quando a aplicação tenta enviar um comando a algum dispositivo, primeiramente, é retornado do broker a descrição desse comando, e depois, as preparações são feitas para fazer corretamente o envio para o dispositivo.
 
 ### Processo de conexão: dispositivo e aplicação
 
-Com a conexão do dispositivo e do broker estabelecida, é possível fazer o intermédio entre a aplicação e o dispositivo. O processo de comunicação pode seguir duas linhas de sequência diferentes: enviar comandos de gerenciamento ao dispositivo, por meio do canal de comunicação TCP, ou fazer requisição de coleta de dados que são enviados do dispositivo para o broker via canal de comunicação UDP.
+Com a conexão do dispositivo e do broker estabelecida, é possível fazer o intermédio entre a aplicação e o dispositivo. O processo de comunicação pode seguir duas linhas de sequência diferentes, sendo elas: enviar comandos de gerenciamento ao dispositivo, por meio do canal de comunicação TCP, ou fazer requisição de coleta de dados que são enviados do dispositivo para o broker via canal de comunicação UDP.
 
-* O protocolo TCP é usado para conexões fixas que necessitam de uma lógica de envio e recebimento de dados envolvendo as duas extremidades da comunicação. Por esse motivo, ele foi usado para o envio de comandos de gerencimanto, em que, a aplicação envia um comando, pelo broker, para o dispositivo executar alguma ação, e é esperada uma resposta do resultado dessa ação. A sequência de mensagens desse caso é descrita no diagrama abaixo:
+O protocolo TCP é usado para conexões fixas que necessitam de uma lógica de envio e recebimento de dados envolvendo as duas extremidades da comunicação. Por esse motivo, ele foi usado para o envio de comandos de gerencimanto, em que, a aplicação envia um comando, pelo broker, para o dispositivo executar alguma ação, e é esperada uma resposta do resultado dessa ação. A sequência de mensagens desse caso é descrita no diagrama abaixo:
 
 <p align="center">
   <img src="images/image4.jpeg" width = "600" />
 </p>
 <p align="center"><strong> Envio de comandos de gerenciamento </strong> </p>
 
-* O protocolo UDP não é orientado a uma conexão fixa, ou seja, não possui estrutura dependente de retorno ao enviar um dado. Assim, ele foi usado para envio de dados de sensoriamento, do dispositivo para o broker, que não necessitam de uma garantia de chegada ao destino. Nesse caso, a aplicação envia comandos relacionados a coleta de dados transmitidos via canal UDP, e o dispositivo não precisa saber que esses dados foram requisitados, já que o broker já está recebendo-os. O diagrama abaixo mostra essa situação: 
+O protocolo UDP não é orientado a uma conexão fixa, ou seja, não possui estrutura dependente de retorno ao enviar um dado. Assim, ele foi usado para envio de dados de sensoriamento, do dispositivo para o broker, que não necessitam de uma garantia de chegada ao destino. Nesse caso, a aplicação envia comandos relacionados a coleta de dados transmitidos via canal UDP, e o dispositivo não precisa saber que esses dados foram requisitados, já que o broker já está recebendo-os. O diagrama abaixo mostra essa situação: 
 
 <p align="center">
   <img src="images/image5.jpeg" width = "600" />
@@ -166,7 +168,7 @@ Com a conexão do dispositivo e do broker estabelecida, é possível fazer o int
 
 <p align="justify"> 
 
-Foram feitas as bases de dois dispositivos, sendo eles, um sensor de temperatura e um aparelho de som via internet, que no projeto é referenciado como um radio. A seguir, serão descritos os módulos e as interfaces dessas entidades, que estão presentes no diretório "device".
+Foram implementados dois dispositivos, sendo eles, um sensor de temperatura e um aparelho de som via internet, que no projeto é referenciado como um radio. A seguir, serão descritos os módulos e as interfaces de exibição dessas entidades, com lógicas implementadas no diretório "device".
 
 **model**
 
@@ -174,11 +176,11 @@ A pasta "model" contém a estrutura das classes usadas no projeto. Foram feitas 
 
 * **Connection_device:** contém a classe da conexão com o servidor. Na sua inicialização são setadas as portas 5050, para o canal de comunicação TCP, e 5060, para o canal UDP. Os dados necessários para realizar a conexão futura com o servidor são setados. Os seus métodos consistem na inicialização e encerramento da conexão com o servidor, e o *loop* de reconexão, caso haja problemas na comunicação.
 
-* **Sensor e Radio:** contém as classes que representam o sensor de temperatura e o aparelho de som via internet, respectivamente. Na sua inicialização são setadas as informações básicas do dispositivo. Seus métodos consistem no retorno e setagem de dados, e na execução de comandos vindos do broker ou do próprio dispositivo;
+* **Sensor e Radio:** contém as classes que representam o sensor de temperatura e o aparelho de som via internet, respectivamente. Na sua inicialização são setadas as informações básicas do dispositivo. Seus métodos consistem no retorno e setagem de dados, e na lógica de execução dos possíveis comandos;
 
 **impl**
 
-A pasta "impl" contém os arquivos com a lógica de implementação dos dispositivos. Estão inclusas as funções de exibição do menu para gerenciar comandos pelo próprio dispositivo e do recebimento de requisições do servidor, se estiver conectado.
+A pasta "impl" contém os arquivos com a lógica de implementação dos dispositivos. Estão inclusas as funções de exibição do menu, para gerenciar comandos pelo próprio dispositivo, e do recebimento de requisições do servidor, se estiver conectado.
 
 O sensor de temperatura possui o seguinte protocolo de requisições que podem ser recebidas através de envios do broker:
 
@@ -191,7 +193,7 @@ O sensor de temperatura possui o seguinte protocolo de requisições que podem s
 
 A requisição de número 3 representaria o envio da medida de temperatura, mas esse dado é enviado periodicamente pelo canal de comunicação UDP, portanto, ele não é recebido. 
 
-O protocolo de requisições do radio, de mensagens vindas do broker, são:
+O protocolo de possíveis requisições para o radio são:
 
 | Comando  | Descrição |
 | ------------- | ------------- |
@@ -211,13 +213,13 @@ Diferentemente do sensor, o radio não possui uma função para envio periódico
 
 A pasta "exec" contém a execução dos programas dos dispositivos, feita, especificamente, no arquivo \__main__. Primeiramente são declarados os objetos representando o dispositivo e a conexão com o servidor, posteriormente, são chamadas as funções necessárias.
 
-Para o sensor de temperatura são chamadas três funções, sendo elas: o *loop* de recebimento das requisições do servidor, o envio periódico de dados pelo canal de comunicação UDP, e a exibição do menu de gerenciamento do dispositivo. Os dois primeiros são executados em *threads* separadas, portanto as três funções executam paralelamente.
+Para o sensor de temperatura são chamadas três funções, sendo elas: o *loop* de recebimento das requisições do servidor, o envio periódico de dados pelo canal de comunicação UDP, e a exibição do menu de gerenciamento do dispositivo. Os dois primeiros são executados em *threads* separadas, portanto as três funções executam em modo pseudo paralelo.
 
 O radio segue a mesma lógica de execução do sensor, com exceção do envio periódico de dados pelo canal de comunicação UDP, que não é implementado por ele.
 
 **Interface de exibição**
 
-Para o gerenciamento do dispositivo em seu próprio terminal, são exibidos fixamente os comandos disponíveis e informações, na parte inferior, relacionadas a situação atual ou ás opções que foram inseridas. As imagens abaixo mostram as telas de inicialização do sensor e do radio.
+Para o gerenciamento do dispositivo em seu próprio terminal, são exibidos fixamente os comandos disponíveis e informações, na parte inferior, relacionadas a situação atual ou as opções que foram inseridas. As imagens abaixo mostram as telas de inicialização do sensor e do radio.
 
 <p align="center">
   <img src="images/image7.jpeg" width = "600" />
@@ -253,7 +255,7 @@ Todos os casos retornam uma mensagem na parte inferior informando o resultado da
 
 <p align="justify"> 
 
-O servidor broker possui a mesma estrutura de arquivo dos dispositivos, com a adição de uma pasta contendo a declaração da API. Todas as informações estão presentes no diretório "broker". A seguir, a descrição dos módulos e da interface.
+O servidor broker possui a mesma estrutura de arquivo dos dispositivos, com a adição de uma pasta contendo a declaração da API. Todas as informações estão presentes no diretório "broker". A seguir, a descrição dos módulos e da interface de exibição.
 
 **model**
 
@@ -264,7 +266,7 @@ A pasta "model" contém dois arquivos com duas classes necessárias para o funci
 
 **impl**
 
-A pasta "impl" contém o arquivo com a lógica de implementação do servidor broker. Suas funções incluem funcionalidades de: receber novas conexões e armazená-las; enviar comandos periódicos de validação de comunicação para os dispositivos; recebimento de dados via canal de comunicação UDP; coleta de dados armazenados; e envio de comandos para dispositivos.
+A pasta "impl" contém o arquivo com a lógica de implementação do servidor broker. Suas funcionalidades incluem: receber novas conexões e armazená-las; enviar comandos periódicos de validação de comunicação para os dispositivos; recebimento de dados via canal de comunicação UDP; coleta de dados armazenados; e envio de comandos para os dispositivos.
 
 Há uma função para enviar as mensagens de validação da comunicação em *loop*, e outra para fazer um único envio quando for chamada. A de envio único é utilizada nas chamadas da API.
 
@@ -281,9 +283,9 @@ A pasta "api" contém o arquivo de declaração da estrutura da API RESTful. Ela
 | **/devices/(ID_do_dispositivo)/commands/description** | Retorna a descrição dos comandos do dispositivo | GET |
 | **/devices/(ID_do_dispositivo)/commands/(comando)** | Envia comando de coleta de dados para o dispositivo | GET |
 | **/devices/(ID_do_dispositivo)/commands/(comando)** | Envia comando de mudança de estado para o dispositivo | POST |
-| **/devices/(ID_do_dispositivo)/commands/(comando)/(novo_dado)** | Envia comando alteração de um dado específico para o dispositivo | PATCH |
+| **/devices/(ID_do_dispositivo)/commands/(comando)/(novo_dado)** | Envia comando de alteração de um dado específico para o dispositivo | PATCH |
 
-Para todos os caminhos que envolvem os dispositivos, é validada a estabilidade da conexão entre o broker e eles antes de retornar os dados. Também, todos retornam mensagens de resposta, exceto, o primeiro caminho.
+Para todos os caminhos que envolvem envios para os dispositivos, é validada a estabilidade da conexão entre o broker e eles antes de realizar a requisição. Também, todos retornam mensagens de resposta, exceto, o primeiro caminho.
 
 O arquivo também contém uma função de inicialização da API, utilizando a porta de rede 5070.
 
@@ -295,12 +297,12 @@ Quando uma conexão é iniciada, é realizado o processo de envio do ID setado p
 
 **Interface de exibição**
 
-Ao iniciar o servidor broker, é exibido o IP que deve ser usado para conexão de outras entidades e a declaração da API RESTful, como mostrado na imagem abaixo.
+Ao iniciar o servidor broker, é exibido o IP que deve ser usado para a conexão com ele, como mostrado na imagem abaixo.
 
 <p align="center">
   <img src="images/image6.jpeg" width = "400" />
 </p>
-<p align="center"><strong> Exibição do servidor broker </strong> </p>
+<p align="center"><strong> Exibição realizada pelo servidor broker </strong> </p>
 
 </p>
 </div>
@@ -311,7 +313,7 @@ Ao iniciar o servidor broker, é exibido o IP que deve ser usado para conexão d
 
 <p align="justify"> 
 
-Na implementação do broker, casos de concorrência entre *threads* tiveram que ser tratados. Esses casos podem ocorrer pelo fato de mais de uma *thread* querer utilizar os objetos socket de comunicação para enviar e receber dados do dispositivo ao mesmo tempo. Nessa situação, funções podem receber dados que não eram destinados para elas. 
+Na implementação do broker, casos de concorrência entre *threads* tiveram que ser tratados. Esses casos podem ocorrer pelo fato de mais de uma *thread* querer utilizar os objetos socket de comunicação para enviar e receber dados do dispositivo quase paralelamente. Nessa situação, funções podem receber dados que não eram destinados para elas. 
 
 Os objetos socket podem ser usados em três execuções diferentes: o envio de mensagens periodicamente para manter a comunicação; o envio de mensagem única para validar a comunicação; e o envio de um comando requisitado pela aplicação.
 
@@ -327,11 +329,11 @@ Para evitar o uso simultâneo dessas ferramentas, para cada dispositivo foi decl
 
 <p align="justify"> 
 
-A aplicação de gerenciamento dos dispositivos é um programa simples de exibição de menu para selecionar opções. As suas funcionalidades incluem a inserção do IP do servidor broker, a consulta dos IDs dos dispositivos conectados, a seleção de um dispositivo a partir do ID e o seu gerenciamento. As chamadas da API são feitas com o uso da biblioteca requests.
+A aplicação de gerenciamento dos dispositivos é um programa simples de exibição de menu para selecionar opções. As suas funcionalidades incluem: a inserção do IP do servidor broker, a consulta dos IDs dos dispositivos conectados, a seleção de um dispositivo a partir do ID, e o seu gerenciamento. As chamadas da API são feitas com o uso da biblioteca requests.
 
 Os códigos de status padrão do protocolo HTTP são usados para verificar se a ação solicitada foi bem sucedida.
 
-As descrições dos comandos dos dispositivos, armazenadas no broker, são usadas para saber informações pertinentes ao enviar um comando, como, a sua descrição, se ele necessita de uma entrada para ser enviado em conjunto, ou qual o método HTTP relacionado a ele.
+As descrições dos comandos dos dispositivos, armazenadas no broker, são usadas para saber informações pertinentes ao enviar um comando, como, a sua descrição, se ele necessita de uma entrada para ser enviada em conjunto, ou qual o método HTTP relacionado a ele.
 
 **Interface de exibição**
 
@@ -376,7 +378,7 @@ O dispositivo recebe essa mensagem de requisição do broker e retorna a respost
 
 <p align="justify"> 
 
-Faça o download do projeto por esse repositório no github. Os programas do projeto podem ser executados de três formas. Elas são explicadas logo abaixo.
+Os programas do projeto podem ser executados de três formas. Para as duas primeiras, faça o download do projeto por esse repositório no github. Os três métodos são explicados abaixo.
 
 **Execução direto**
 
@@ -421,9 +423,9 @@ E para executar a aplicação, entre no endereço "interfaces/application" e exe
 
 **Baixando imagem pelo Docker Hub**
 
-O método mais simples de execução é baixando a imagem da entidade no Docker Hub e executando o container realacionado.
+O método mais simples de execução é baixando a imagem da entidade no Docker Hub e executando o container relacionado.
 
-Para o sensor, usa-se os senguintes comandos:
+Para o sensor, usa-se os seguintes comandos:
 
 	docker pull silviozv/sensor
 	docker run -i --network host -e TERM=xterm silviozv/sensor
@@ -453,6 +455,12 @@ E para a aplicação de gerenciamento:
 
 <p align="justify"> 
 
+Foi possível implementar as três entidades da estrutura geral do projeto. Todas as linhas de comunicação seguem as orientações das requisições, utilizando corretamente os protocolos de comunicação específicados. A aplicação consegue gerenciar os dispositivos por intermédio do servidor broker. O sistema suporta diversos dispositivos e aplicações sem causar danos a comunicação geral. 
+
+A comunicação estabelecida entre o dispositivo e o servidor broker é confiável e possui a capacidade de reconexão em casos de oscilação na rede. Permitindo, assim, a praticidade do usuário em manter a conectividade entre os softwares, estando eles em quaisquer máquinas conectadas a rede local.
+
+Em conclusão, o projeto obteve êxito na implementação de conexões entre entidades simuladas. Dessa forma, são seguidas as inovações tecnológicas formadas pelo conceito de internet das coisas.
+
 </p>
 </div>
 
@@ -462,15 +470,15 @@ E para a aplicação de gerenciamento:
 
 <p align="justify"> 
 
-Livro sobre IoT: https://repositorio.fgv.br/server/api/core/bitstreams/b50af2ba-b001-4b1d-a1ad-5df985f6d1bb/content
+MAGRANI, E (2018). "A internet das coisas". Link de acesso: https://repositorio.fgv.br/server/api/core/bitstreams/b50af2ba-b001-4b1d-a1ad-5df985f6d1bb/content. Acesso em: 4 de maio de 2024.
 
-Socket: https://www.treinaweb.com.br/blog/uma-introducao-a-tcp-udp-e-sockets
+TEDESCO, A (2019). "Uma introdução a TCP, UDP e Sockets". Link de acesso: https://www.treinaweb.com.br/blog/uma-introducao-a-tcp-udp-e-sockets. Acesso em: 4 de maio de 2024.
 
-Flask: https://www.treinaweb.com.br/blog/o-que-e-flask
+ANDRADE, A (2019). "O que é Flask?". Link de acesso: https://www.treinaweb.com.br/blog/o-que-e-flask. Acesso em: 4 de maio de 2024.
 
-Docker: https://www.hostinger.com.br/tutoriais/o-que-e-docker
+Hostinger tutorials (2024). "O Que é Docker e Como Ele Funciona? – Docker Explicado". Link de acesso: https://www.hostinger.com.br/tutoriais/o-que-e-docker. Acesso em: 4 de maio de 2024.
 
-Insomnia: https://www.hostinger.com.br/tutoriais/o-que-e-docker
+RIBEIRO, L (2020). "Insomnia, um poderoso testador de rotas". Link de acesso: https://lucassr.medium.com/insomnia-um-poderoso-testador-de-rotas-3d77d2cd8e89. Acesso em: 4 de maio de 2024.
 
 </p>
 </div>
