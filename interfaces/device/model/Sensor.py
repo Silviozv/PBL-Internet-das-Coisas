@@ -13,7 +13,7 @@ class Sensor:
     def __init__(self):
         """
         Inicialização dos atributos base do sensor de temperatura. Incluindo: a descrição, o status, os 
-        dados da temperatura, os comandos disponíveis para o usuário e as suas descrições.
+        dados da temperatura, e as descrições dos comandos disponíveis para requisição..
         """
 
         self.description = 'Sensor de temperatura'
@@ -82,7 +82,7 @@ class Sensor:
 
     def get_commands_description(self) -> dict:
         """
-        Retorna a descrição de cada comando disponível ao usuário.
+        Retorna a descrição de cada comando disponível para requisição.
 
         :return: Descrição dos comandos.
         :rtype: dict

@@ -64,11 +64,10 @@ def server_request_tcp( sensor, connection):
     2: Desligar dispositivo;
     3: Enviar medida de temperatura, porém, como esse dado é enviado periodicamente por 
        comunicação UDP, esse comando não é recebido, estando destacado só como representação;
-    4: Envio da descrição geral do dispositivo;
-    5: Envio dos comandos disponíveis ao usuário.
+    4: Envio da descrição geral do dispositivo.
 
     Se o comando 0 não for recebido no tempo indicado, ou a conexão for encerrada, é 
-    iniciado o 'looping' de reconexão paralelamente.
+    iniciado o 'looping' de reconexão em outra thread.
 
     :param sensor: Objeto que representa o sensor de temperatura.
     :type sensor: object

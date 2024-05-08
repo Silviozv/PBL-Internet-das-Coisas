@@ -13,7 +13,7 @@ class Radio:
     def __init__(self):
         """
         Inicialização dos atributos base do Radio. Incluindo: a descrição, o status, os dados da 
-        música atual, os comandos disponíveis para o usuário e as suas descrições.
+        música atual, e as descrições dos comandos disponíveis para requisição.
         """
 
         self.description = 'Aparelho de som via internet'
@@ -73,7 +73,7 @@ class Radio:
 
     def get_commands_description(self) -> dict:
         """
-        Retorna a descrição de cada comando disponível ao usuário.
+        Retorna a descrição de cada comando disponível para requisição.
 
         :return: Descrição dos comandos.
         :rtype: dict

@@ -40,7 +40,7 @@ class Connection_device:
         Dependendo do resultado da ação e do status atual da conexão com o servidor, a mensagem de resposta 
         é modificada.
 
-        :param commands_description: Descrição dos comandos disponíveis ao usuário.
+        :param commands_description: Descrição dos comandos disponíveis para requisição.
         :type commands_description: dict
         :return: Resultado da tentativa de início da conexão com o servidor.
         :rtype: str
@@ -102,9 +102,10 @@ class Connection_device:
         checagem para o servidor, e é esperada a resposta indicando se ele manteve o 
         dispositivo armazenado ou não. Se for recebido que o servidor encerrou a conexão 
         com o dispositivo, é feita uma nova tentativa de recomeçar a conexão. O 'loop' continua 
-        até que a reconexão seja feita.
+        até que a reconexão seja feita, ou que seja recebida a confirmação que a conexão 
+        ainda é válida.
 
-        :param commands_description: Descrição dos comandos disponíveis ao usuário.
+        :param commands_description: Descrição dos comandos disponíveis para requisição.
         :type commands_description: dict
         """
 

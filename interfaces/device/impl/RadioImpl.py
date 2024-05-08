@@ -70,11 +70,10 @@ def server_request_tcp( radio, connection):
     3: Setar música;
     4: Colocar música para tocar;
     5: Pausar música;
-    6: Envio da descrição geral do dispositivo;
-    7: Envio dos comandos disponíveis ao usuário.
+    6: Envio da descrição geral do dispositivo.
 
     Se o comando 0 não for recebido no tempo indicado, ou a conexão for encerrada, é 
-    iniciado o 'looping' de reconexão paralelamente.
+    iniciado o 'looping' de reconexão em outra thread.
 
     :param radio: Objeto que representa o radio.
     :type radio: object
